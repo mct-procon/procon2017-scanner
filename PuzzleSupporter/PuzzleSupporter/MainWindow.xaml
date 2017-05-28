@@ -5,12 +5,24 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:PuzzleSupporter"
         x:Name="ThisWindow"
-        Title="PuzzleSupporter" Height="300" Width="400" Closed="ThisWindow_Closed">
+        Title="MainWindow - PuzzleSupporter" Height="300" Width="400" Closed="ThisWindow_Closed">
     <Window.Resources>
         <local:MaximizeNormalizeConverter x:Key="MaximizeNormalizeConverter"/>
     </Window.Resources>
     <Window.Triggers>
-        <!--<EventTrigger RoutedEvent="MouseEnter">
+        
+    </Window.Triggers>
+    <WindowChrome.WindowChrome>
+        <WindowChrome x:Name="WinChro" GlassFrameThickness="-1" CaptionHeight="40"/>
+    </WindowChrome.WindowChrome>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="{Binding ElementName=WinChro, Path=CaptionHeight}"/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+        <Grid x:Name="ContentGrid" Grid.RowSpan="2" Background="White">
+            <Grid.Triggers>
+                <EventTrigger RoutedEvent="MouseEnter">
             <BeginStoryboard Name="CaptionFadeIn">
                 <Storyboard>
                     <DoubleAnimation Storyboard.TargetName="CaptionGrid" Storyboard.TargetProperty="Opacity" To="0.1" Duration="0:0:0.8">
@@ -33,29 +45,24 @@
                 </Storyboard>
             </BeginStoryboard>
             <StopStoryboard BeginStoryboardName="CaptionFadeIn"/>
-        </EventTrigger>-->
-    </Window.Triggers>
-    <WindowChrome.WindowChrome>
-        <WindowChrome x:Name="WinChro" GlassFrameThickness="-1" CaptionHeight="40"/>
-    </WindowChrome.WindowChrome>
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="{Binding ElementName=WinChro, Path=CaptionHeight}"/>
-            <RowDefinition/>
-        </Grid.RowDefinitions>
-        <Grid x:Name="ContentGrid" Grid.RowSpan="2">
+        </EventTrigger>
+            </Grid.Triggers>
             <Image Source="{Binding CameraImage}"/>
         </Grid>
         <Grid x:Name="CaptionGrid">
+            <Grid.Resources>
+                <ResourceDictionary Source="/Styles/CaptionDesign.xaml"/>
+            </Grid.Resources>
             <Grid.Background>
                 <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
                     <GradientStop Color="#CC000000" Offset="0"/>
                     <GradientStop Offset="1" Color="#00000000"/>
                 </LinearGradientBrush>
             </Grid.Background>
-            <Button x:Name="MinimizeButton" FontFamily="Marlett" Content="0" WindowChrome.IsHitTestVisibleInChrome="True" Width="40" Height="30" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,0,80,0" Click="MinimizeButton_Click"/>
-            <Button x:Name="NormalMaxButton" FontFamily="Marlett" Content="{Binding ElementName=ThisWindow, Path=WindowState, Converter={StaticResource ResourceKey=MaximizeNormalizeConverter}}" WindowChrome.IsHitTestVisibleInChrome="True" Width="40" Height="30" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,0,40,0" Click="NormalMaxButton_Click"/>
-            <Button x:Name="CloseButton" FontFamily="Marlett" Content="r" WindowChrome.IsHitTestVisibleInChrome="True" Width="40" Height="30" HorizontalAlignment="Right" VerticalAlignment="Top" Click="CloseButton_Click"/>
+            <TextBlock Text="{Binding ElementName=ThisWindow, Path=Title}" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,0,135,0" FontSize="16"/>
+            <Button x:Name="MinimizeButton" Style="{StaticResource ResourceKey=MinMaxButton}" Content="0" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,0,90,0" Click="MinimizeButton_Click"/>
+            <Button x:Name="NormalMaxButton" Style="{StaticResource ResourceKey=MinMaxButton}" Content="{Binding ElementName=ThisWindow, Path=WindowState, Converter={StaticResource ResourceKey=MaximizeNormalizeConverter}}" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,0,45,0" Click="NormalMaxButton_Click"/>
+            <Button x:Name="CloseButton" Style="{StaticResource ResourceKey=CloseButton}" Content="r" HorizontalAlignment="Right" VerticalAlignment="Top" Click="CloseButton_Click"/>
         </Grid>
 
     </Grid>

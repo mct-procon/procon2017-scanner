@@ -54,13 +54,14 @@ namespace PuzzleSupporter {
                     using(var Camera = new VideoCapture(0)) {
                         _cameraImage = new WriteableBitmap(Camera.FrameWidth, Camera.FrameHeight, 96, 96, PixelFormats.Bgr24, null);
                         using (var img = new Mat()) {
-                            while(_isAlive) {
-                                Camera.Read(img);
-                                if (!_isAlive) break;
+                            Camera.Read(img);
+                            while (_isAlive) {
                                 _windowDispatcher.BeginInvoke((Action)(() => {
-                                    CameraImage = OpenCvSharp.Extensions.WriteableBitmapConverter.ToWriteableBitmap(img);
+                                    if(!img.IsDisposed)
+                                        CameraImage = OpenCvSharp.Extensions.WriteableBitmapConverter.ToWriteableBitmap(img);
                                 }));
                                 Thread.Sleep(1000 / 60);
+                                Camera.Read(img);
                             }
                         }
                     }
