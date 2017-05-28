@@ -23,29 +23,29 @@
         <Grid x:Name="ContentGrid" Grid.RowSpan="2" Background="White">
             <Grid.Triggers>
                 <EventTrigger RoutedEvent="MouseEnter">
-            <BeginStoryboard Name="CaptionFadeIn">
-                <Storyboard>
-                    <DoubleAnimation Storyboard.TargetName="CaptionGrid" Storyboard.TargetProperty="Opacity" To="0.1" Duration="0:0:0.8">
-                        <DoubleAnimation.EasingFunction>
-                            <SineEase EasingMode="EaseIn"/>
-                        </DoubleAnimation.EasingFunction>
-                    </DoubleAnimation>
-                </Storyboard>
-            </BeginStoryboard>
-            <StopStoryboard BeginStoryboardName="CaptionFadeOut"/>
-        </EventTrigger>
-        <EventTrigger RoutedEvent="MouseLeave">
-            <BeginStoryboard Name="CaptionFadeOut">
-                <Storyboard>
-                    <DoubleAnimation Storyboard.TargetName="CaptionGrid" Storyboard.TargetProperty="Opacity" To="1" Duration="0:0:0.8">
-                        <DoubleAnimation.EasingFunction>
-                            <SineEase EasingMode="EaseIn"/>
-                        </DoubleAnimation.EasingFunction>
-                    </DoubleAnimation>
-                </Storyboard>
-            </BeginStoryboard>
-            <StopStoryboard BeginStoryboardName="CaptionFadeIn"/>
-        </EventTrigger>
+                    <BeginStoryboard Name="CaptionFadeIn">
+                        <Storyboard>
+                            <DoubleAnimation Storyboard.TargetName="CaptionGrid" Storyboard.TargetProperty="Opacity" To="0.1" Duration="0:0:0.8">
+                                <DoubleAnimation.EasingFunction>
+                                    <SineEase EasingMode="EaseIn"/>
+                                </DoubleAnimation.EasingFunction>
+                            </DoubleAnimation>
+                        </Storyboard>
+                    </BeginStoryboard>
+                    <StopStoryboard BeginStoryboardName="CaptionFadeOut"/>
+                </EventTrigger>
+                <EventTrigger RoutedEvent="MouseLeave">
+                    <BeginStoryboard Name="CaptionFadeOut">
+                        <Storyboard>
+                            <DoubleAnimation Storyboard.TargetName="CaptionGrid" Storyboard.TargetProperty="Opacity" To="1" Duration="0:0:0.8">
+                                <DoubleAnimation.EasingFunction>
+                                    <SineEase EasingMode="EaseIn"/>
+                                </DoubleAnimation.EasingFunction>
+                            </DoubleAnimation>
+                        </Storyboard>
+                    </BeginStoryboard>
+                    <StopStoryboard BeginStoryboardName="CaptionFadeIn"/>
+                </EventTrigger>
             </Grid.Triggers>
             <Image Source="{Binding CameraImage}"/>
         </Grid>
