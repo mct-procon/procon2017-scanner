@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:PuzzleSupporter"
         x:Name="ThisWindow"
-        Title="MainWindow - PuzzleSupporter" Height="300" Width="400" Closed="ThisWindow_Closed">
+        Title="MainWindow - PuzzleSupporter" Height="300" Width="400" Closed="ThisWindow_Closed" Loaded="Window_Loaded">
     <Window.Resources>
         <local:MaximizeNormalizeConverter x:Key="MaximizeNormalizeConverter"/>
     </Window.Resources>

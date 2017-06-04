@@ -31,35 +31,51 @@ namespace PuzzleSupporter {
 
         public MainWindow() {
             InitializeComponent();
-            _viewModel = new ViewModel();
-            _viewModel._windowDispatcher = Dispatcher;
-            _viewModel.BeginCaptureing();
+            _viewModel = new ViewModel(Dispatcher, this);
             this.DataContext = _viewModel;
 
         }
+
+        private void Window_Loaded(object sender, RoutedEventArgs e) {
+            _viewModel.BeginCaptureing();
+        }
+
 
         public class ViewModel : BindableBase {
             internal WriteableBitmap _cameraImage;
             internal Thread _cameraThread;
             internal bool _isAlive = true;
             internal Dispatcher _windowDispatcher;
+            internal MainWindow Window;
+
+            internal ViewModel(Dispatcher disp, MainWindow win) {
+                _windowDispatcher = disp;
+                Window = win;
+            }
 
             public WriteableBitmap CameraImage {
                 get => _cameraImage;
                 set => SetProperty(ref _cameraImage, value);
             }
 
+
+            private WriteableBitmap _back_thread_camera_img;
             internal void BeginCaptureing() {
                 _cameraThread = new Thread(() => {
                     using(var Camera = new VideoCapture(0)) {
-                        _cameraImage = new WriteableBitmap(Camera.FrameWidth, Camera.FrameHeight, 96, 96, PixelFormats.Bgr24, null);
                         using (var img = new Mat()) {
+                            _windowDispatcher.Invoke(() => {
+                                _back_thread_camera_img = new WriteableBitmap(Camera.FrameWidth, Camera.FrameHeight, 96, 96, PixelFormats.Bgr24, null);
+                            });
                             Camera.Read(img);
                             while (_isAlive) {
-                                _windowDispatcher.BeginInvoke((Action)(() => {
-                                    if(!img.IsDisposed)
-                                        CameraImage = OpenCvSharp.Extensions.WriteableBitmapConverter.ToWriteableBitmap(img);
-                                }));
+                                _windowDispatcher.Invoke(() => {
+                                    lock (_back_thread_camera_img) {
+                                        if (img.IsDisposed) return;
+                                        OpenCvSharp.Extensions.WriteableBitmapConverter.ToWriteableBitmap(img, _back_thread_camera_img);
+                                        CameraImage = _back_thread_camera_img;
+                                    }
+                                });
                                 Thread.Sleep(1000 / 60);
                                 Camera.Read(img);
                             }
@@ -88,8 +104,9 @@ namespace PuzzleSupporter {
 
         private void ThisWindow_Closed(object sender, EventArgs e) {
             _viewModel.Stop();
-            Thread.Sleep(1000 / 60 * 20);
+            Thread.Sleep(1000);
         }
+
     }
 
     public class MaximizeNormalizeConverter : IValueConverter {
