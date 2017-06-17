@@ -47,6 +47,8 @@ namespace PuzzleSupporter {
             internal bool _isAlive = true;
             internal Dispatcher _windowDispatcher;
             internal MainWindow Window;
+            internal Scalar Upper = new Scalar(180, 255, 255);
+            internal Scalar Lower = new Scalar(0, 0, 0);
 
             internal ViewModel(Dispatcher disp, MainWindow win) {
                 _windowDispatcher = disp;
@@ -58,26 +60,62 @@ namespace PuzzleSupporter {
                 set => SetProperty(ref _cameraImage, value);
             }
 
+            public double H_Upper {
+                get => Upper.Val0;
+                set => SetProperty(ref Upper.Val0, value);
+            }
+
+            public double H_Lower {
+                get => Lower.Val0;
+                set => SetProperty(ref Lower.Val0, value);
+            }
+
+            public double S_Upper {
+                get => Upper.Val1;
+                set => SetProperty(ref Upper.Val1, value);
+            }
+
+            public double S_Lower {
+                get => Lower.Val1;
+                set => SetProperty(ref Lower.Val1, value);
+            }
+
+            public double V_Upper {
+                get => Upper.Val2;
+                set => SetProperty(ref Upper.Val2, value);
+            }
+
+            public double V_Lower {
+                get => Lower.Val2;
+                set => SetProperty(ref Lower.Val2, value);
+            }
+
 
             private WriteableBitmap _back_thread_camera_img;
             internal void BeginCaptureing() {
                 _cameraThread = new Thread(() => {
                     using(var Camera = new VideoCapture(0)) {
                         using (var img = new Mat()) {
-                            _windowDispatcher.Invoke(() => {
-                                _back_thread_camera_img = new WriteableBitmap(Camera.FrameWidth, Camera.FrameHeight, 96, 96, PixelFormats.Bgr24, null);
-                            });
-                            Camera.Read(img);
-                            while (_isAlive) {
-                                _windowDispatcher.Invoke(() => {
-                                    lock (_back_thread_camera_img) {
-                                        if (img.IsDisposed) return;
-                                        OpenCvSharp.Extensions.WriteableBitmapConverter.ToWriteableBitmap(img, _back_thread_camera_img);
-                                        CameraImage = _back_thread_camera_img;
+                            using (var hsvimg = new Mat()) {
+                                using (var bwimg = new Mat()) {
+                                    _windowDispatcher.Invoke(() => {
+                                        _back_thread_camera_img = new WriteableBitmap(Camera.FrameWidth, Camera.FrameHeight, 96, 96, PixelFormats.Bgr24, null);
+                                    });
+                                    Camera.Read(img);
+                                    while (_isAlive) {
+                                        _windowDispatcher.Invoke(() => {
+                                            lock (_back_thread_camera_img) {
+                                                if (img.IsDisposed) return;
+                                                OpenCvSharp.Extensions.WriteableBitmapConverter.ToWriteableBitmap(img, _back_thread_camera_img);
+                                                CameraImage = _back_thread_camera_img;
+                                            }
+                                        });
+                                        Cv2.CvtColor(img, hsvimg, ColorConversionCodes.BGR2HSV);
+                                        Cv2.InRange(hsvimg, Lower, Upper, bwimg);
+                                        Thread.Sleep(1000 / 60);
+                                        Camera.Read(img);
                                     }
-                                });
-                                Thread.Sleep(1000 / 60);
-                                Camera.Read(img);
+                                }
                             }
                         }
                     }
