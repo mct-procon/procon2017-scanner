@@ -29,11 +29,19 @@ namespace PuzzleSupporter {
     public partial class MainWindow : System.Windows.Window {
         internal ViewModel _viewModel;
 
+        public MainWindow(int deviceId)
+        {
+            InitializeComponent();
+            _viewModel = new ViewModel(Dispatcher, this);
+            _viewModel.DeviceId = deviceId;
+            this.Title = $"{deviceId} - PuzzleSupporter";
+            this.DataContext = _viewModel;
+        }
+
         public MainWindow() {
             InitializeComponent();
             _viewModel = new ViewModel(Dispatcher, this);
             this.DataContext = _viewModel;
-
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e) {
@@ -42,6 +50,7 @@ namespace PuzzleSupporter {
 
 
         public class ViewModel : BindableBase {
+            internal int DeviceId = 0;
             internal WriteableBitmap _cameraImage;
             internal Thread _cameraThread;
             internal bool _isAlive = true;
@@ -49,6 +58,8 @@ namespace PuzzleSupporter {
             internal MainWindow Window;
             internal Scalar Upper = new Scalar(180, 255, 255);
             internal Scalar Lower = new Scalar(0, 0, 0);
+            internal FilterPreviewWindow FilterWindow;
+            internal FilterPreviewWindow.ViewModel FilterViewModel;
 
             internal ViewModel(Dispatcher disp, MainWindow win) {
                 _windowDispatcher = disp;
@@ -92,26 +103,36 @@ namespace PuzzleSupporter {
 
 
             private WriteableBitmap _back_thread_camera_img;
+            private WriteableBitmap _back_thread_filter_img;
             internal void BeginCaptureing() {
                 _cameraThread = new Thread(() => {
-                    using(var Camera = new VideoCapture(0)) {
+                    using(var Camera = new VideoCapture(DeviceId)) {
                         using (var img = new Mat()) {
                             using (var hsvimg = new Mat()) {
                                 using (var bwimg = new Mat()) {
                                     _windowDispatcher.Invoke(() => {
                                         _back_thread_camera_img = new WriteableBitmap(Camera.FrameWidth, Camera.FrameHeight, 96, 96, PixelFormats.Bgr24, null);
+                                        _back_thread_filter_img = new WriteableBitmap(Camera.FrameWidth, Camera.FrameHeight, 96, 96, PixelFormats.Gray8, null);
+                                        FilterWindow = new FilterPreviewWindow(DeviceId);
+                                        FilterViewModel = new FilterPreviewWindow.ViewModel();
+                                        FilterWindow.DataContext = FilterViewModel; 
+                                        FilterWindow.Show();
                                     });
                                     Camera.Read(img);
                                     while (_isAlive) {
                                         _windowDispatcher.Invoke(() => {
-                                            lock (_back_thread_camera_img) {
-                                                if (img.IsDisposed) return;
-                                                OpenCvSharp.Extensions.WriteableBitmapConverter.ToWriteableBitmap(img, _back_thread_camera_img);
-                                                CameraImage = _back_thread_camera_img;
-                                            }
+                                            if (img.IsDisposed) return;
+                                            OpenCvSharp.Extensions.WriteableBitmapConverter.ToWriteableBitmap(img, _back_thread_camera_img);
+                                            CameraImage = _back_thread_camera_img;
                                         });
                                         Cv2.CvtColor(img, hsvimg, ColorConversionCodes.BGR2HSV);
                                         Cv2.InRange(hsvimg, Lower, Upper, bwimg);
+                                        _windowDispatcher.Invoke(() =>
+                                        {
+                                            if (bwimg.IsDisposed) return;
+                                            OpenCvSharp.Extensions.WriteableBitmapConverter.ToWriteableBitmap(bwimg, _back_thread_filter_img);
+                                            FilterViewModel.Img = _back_thread_filter_img;
+                                        });
                                         Thread.Sleep(1000 / 60);
                                         Camera.Read(img);
                                     }

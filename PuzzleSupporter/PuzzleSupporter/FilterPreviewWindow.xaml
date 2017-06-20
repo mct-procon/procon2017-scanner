@@ -7,6 +7,6 @@
         mc:Ignorable="d"
         Title="FilterPreviewWindow" Height="300" Width="300">
     <Grid>
-        
+        <Image Source="{Binding Img}"/>
     </Grid>
 </Window>

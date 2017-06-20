@@ -12,13 +12,33 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 
+using Prism.Commands;
+using Prism.Mvvm;
+
+using OpenCvSharp;
+
 namespace PuzzleSupporter {
     /// <summary>
     /// FilterPreviewWindow.xaml の相互作用ロジック
     /// </summary>
-    public partial class FilterPreviewWindow : Window {
+    public partial class FilterPreviewWindow : System.Windows.Window {
+        public FilterPreviewWindow(int DeviceId)
+        {
+            InitializeComponent();
+            Title = $"FilterWindow {DeviceId} - PuzzleSupporter";
+        }
+
         public FilterPreviewWindow() {
             InitializeComponent();
+        }
+
+        public class ViewModel : BindableBase {
+            internal WriteableBitmap _Img;
+
+            public WriteableBitmap Img {
+                get => _Img;
+                set => SetProperty(ref _Img, value);
+            }
         }
     }
 }
