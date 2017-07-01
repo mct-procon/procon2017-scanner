@@ -14,7 +14,7 @@ namespace PuzzleSupporter {
     {
         private void Application_Startup(object sender, StartupEventArgs e)
         {
-            (new MainWindow(1)).Show();
+            (new MainWindow(0)).Show();
         }
     }
 }
