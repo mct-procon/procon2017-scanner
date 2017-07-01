@@ -19,6 +19,8 @@ using System.Threading;
 
 using OpenCvSharp;
 
+using ZXing;
+
 using Prism.Commands;
 using Prism.Mvvm;
 
@@ -60,6 +62,8 @@ namespace PuzzleSupporter {
             internal Scalar Lower = new Scalar(0, 0, 0);
             internal FilterPreviewWindow FilterWindow;
             internal FilterPreviewWindow.ViewModel FilterViewModel;
+            internal InformationWindow InformWindow;
+            internal InformationWindow.ViewModel InformViewModel;
 
             internal ViewModel(Dispatcher disp, MainWindow win) {
                 _windowDispatcher = disp;
@@ -101,12 +105,22 @@ namespace PuzzleSupporter {
                 set => SetProperty(ref Lower.Val2, value);
             }
 
-
-            private WriteableBitmap _back_thread_camera_img;
-            private WriteableBitmap _back_thread_filter_img;
             internal void BeginCaptureing() {
                 _cameraThread = new Thread(() => {
+                    WriteableBitmap _back_thread_camera_img = null;
+                    WriteableBitmap _back_thread_filter_img = null;
                     using(var Camera = new VideoCapture(DeviceId)) {
+                        if (!Camera.IsOpened()) {
+                            _isAlive = false;
+                            _windowDispatcher.Invoke(() => {
+                                Window.Close();
+                            });
+                            return;
+                        }
+                        //System.Drawing.Bitmap bmp = new System.Drawing.Bitmap(Camera.FrameWidth, Camera.FrameHeight);
+                        BarcodeReader QrReader = new BarcodeReader();
+                        Result QrResult = null;
+                        var QrSource = new PuzzleSupporter.ZXingNet.BitmapSourceLuminanceSourceEx(Camera.FrameWidth, Camera.FrameHeight);
                         using (var img = new Mat()) {
                             using (var hsvimg = new Mat()) {
                                 using (var bwimg = new Mat()) {
@@ -115,14 +129,29 @@ namespace PuzzleSupporter {
                                         _back_thread_filter_img = new WriteableBitmap(Camera.FrameWidth, Camera.FrameHeight, 96, 96, PixelFormats.Gray8, null);
                                         FilterWindow = new FilterPreviewWindow(DeviceId);
                                         FilterViewModel = new FilterPreviewWindow.ViewModel();
-                                        FilterWindow.DataContext = FilterViewModel; 
+                                        FilterWindow.DataContext = FilterViewModel;
+                                        FilterWindow.Closing += (ss, ee) => {
+                                            if (_isAlive) ee.Cancel = true;
+                                        };
+                                        InformWindow = new InformationWindow();
+                                        InformViewModel = new InformationWindow.ViewModel();
+                                        InformWindow.DataContext = InformViewModel;
+                                        InformWindow.Closing += (ss, ee) => {
+                                            if (_isAlive) ee.Cancel = true;
+                                        };
+                                        InformWindow.Show();
                                         FilterWindow.Show();
                                     });
+
                                     Camera.Read(img);
                                     while (_isAlive) {
                                         _windowDispatcher.Invoke(() => {
                                             if (img.IsDisposed) return;
                                             OpenCvSharp.Extensions.WriteableBitmapConverter.ToWriteableBitmap(img, _back_thread_camera_img);
+                                            QrSource.UpdateImage(_back_thread_camera_img);
+                                            QrResult = QrReader.Decode(QrSource);
+                                            if (QrResult != null)
+                                                InformViewModel.TestData = QrResult.Text;
                                             CameraImage = _back_thread_camera_img;
                                         });
                                         Cv2.CvtColor(img, hsvimg, ColorConversionCodes.BGR2HSV);
@@ -133,9 +162,13 @@ namespace PuzzleSupporter {
                                             OpenCvSharp.Extensions.WriteableBitmapConverter.ToWriteableBitmap(bwimg, _back_thread_filter_img);
                                             FilterViewModel.Img = _back_thread_filter_img;
                                         });
-                                        Thread.Sleep(1000 / 60);
+                                        Thread.Sleep(1000 / 60 - 10);
                                         Camera.Read(img);
                                     }
+                                    _windowDispatcher.Invoke(() => {
+                                        FilterWindow.Close();
+                                        InformWindow.Close();
+                                    });
                                 }
                             }
                         }
@@ -173,7 +206,7 @@ namespace PuzzleSupporter {
             if (value is WindowState)
                 return (WindowState)value == WindowState.Normal ? "1" : "2";
             else
-                throw new FormatException("Bad Type. Need WindowState Typed Value.");
+                throw new System.FormatException("Bad Type. Need WindowState Typed Value.");
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) {

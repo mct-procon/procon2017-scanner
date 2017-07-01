@@ -32,6 +32,18 @@ namespace PuzzleSupporter {
             InitializeComponent();
         }
 
+        private void MinimizeButton_Click(object sender, RoutedEventArgs e) {
+            this.WindowState = WindowState.Minimized;
+        }
+
+        private void NormalMaxButton_Click(object sender, RoutedEventArgs e) {
+            this.WindowState = this.WindowState == WindowState.Normal ? WindowState.Maximized : WindowState.Normal;
+        }
+
+        private void CloseButton_Click(object sender, RoutedEventArgs e) {
+            this.Close();
+        }
+
         public class ViewModel : BindableBase {
             internal WriteableBitmap _Img;
 

@@ -4,9 +4,34 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:PuzzleSupporter"
-        mc:Ignorable="d"
+        mc:Ignorable="d" x:Name="ThisWindow"
         Title="FilterPreviewWindow" Height="300" Width="300">
+    <Window.Resources>
+        <local:MaximizeNormalizeConverter x:Key="MaximizeNormalizeConverter"/>
+    </Window.Resources>
+    <WindowChrome.WindowChrome>
+        <WindowChrome x:Name="WinChro" GlassFrameThickness="-1" CaptionHeight="40"/>
+    </WindowChrome.WindowChrome>
     <Grid>
-        <Image Source="{Binding Img}"/>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="{Binding ElementName=WinChro, Path=CaptionHeight}"/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+        <Image Grid.Row="0" Grid.RowSpan="2" Source="{Binding Img}"/>
+        <Grid x:Name="CaptionGrid">
+            <Grid.Resources>
+                <ResourceDictionary Source="/Styles/CaptionDesign.xaml"/>
+            </Grid.Resources>
+            <Grid.Background>
+                <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                    <GradientStop Color="#CC000000" Offset="0"/>
+                    <GradientStop Offset="1" Color="#00000000"/>
+                </LinearGradientBrush>
+            </Grid.Background>
+            <TextBlock Text="{Binding ElementName=ThisWindow, Path=Title}" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,0,135,0" FontSize="16"/>
+            <Button x:Name="MinimizeButton" Style="{StaticResource ResourceKey=MinMaxButton}" Content="0" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,0,90,0" Click="MinimizeButton_Click"/>
+            <Button x:Name="NormalMaxButton" Style="{StaticResource ResourceKey=MinMaxButton}" Content="{Binding ElementName=ThisWindow, Path=WindowState, Converter={StaticResource ResourceKey=MaximizeNormalizeConverter}}" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,0,45,0" Click="NormalMaxButton_Click"/>
+            <Button x:Name="CloseButton" Style="{StaticResource ResourceKey=CloseButton}" Content="r" HorizontalAlignment="Right" VerticalAlignment="Top" Click="CloseButton_Click"/>
+        </Grid>
     </Grid>
 </Window>
