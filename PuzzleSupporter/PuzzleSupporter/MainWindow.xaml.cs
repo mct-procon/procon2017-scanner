@@ -64,6 +64,7 @@ namespace PuzzleSupporter {
             internal FilterPreviewWindow.ViewModel FilterViewModel;
             internal InformationWindow InformWindow;
             internal InformationWindow.ViewModel InformViewModel;
+            internal double _ApproxDPEpsilon;
 
             internal ViewModel(Dispatcher disp, MainWindow win) {
                 _windowDispatcher = disp;
@@ -105,6 +106,12 @@ namespace PuzzleSupporter {
                 set => SetProperty(ref Lower.Val2, value);
             }
 
+            public double ApproxDPEpsilon {
+                get => _ApproxDPEpsilon;
+                set => SetProperty(ref _ApproxDPEpsilon, value);
+            }
+
+            private PointCollection PointCollectionCache;
             internal void BeginCaptureing() {
                 _cameraThread = new Thread(() => {
                     WriteableBitmap _back_thread_camera_img = null;
@@ -127,6 +134,7 @@ namespace PuzzleSupporter {
                                     _windowDispatcher.Invoke(() => {
                                         _back_thread_camera_img = new WriteableBitmap(Camera.FrameWidth, Camera.FrameHeight, 96, 96, PixelFormats.Bgr24, null);
                                         _back_thread_filter_img = new WriteableBitmap(Camera.FrameWidth, Camera.FrameHeight, 96, 96, PixelFormats.Gray8, null);
+                                        PointCollectionCache = new PointCollection(20);
                                         FilterWindow = new FilterPreviewWindow(DeviceId);
                                         FilterViewModel = new FilterPreviewWindow.ViewModel();
                                         FilterWindow.DataContext = FilterViewModel;
@@ -139,10 +147,12 @@ namespace PuzzleSupporter {
                                         InformWindow.Closing += (ss, ee) => {
                                             if (_isAlive) ee.Cancel = true;
                                         };
+                                        ApproxDPEllipse = 1.5;
                                         InformWindow.Show();
                                         FilterWindow.Show();
                                     });
 
+                                    OpenCvSharp.Point[] ps;
                                     Camera.Read(img);
                                     while (_isAlive) {
                                         _windowDispatcher.Invoke(() => {
@@ -156,11 +166,18 @@ namespace PuzzleSupporter {
                                         });
                                         Cv2.CvtColor(img, hsvimg, ColorConversionCodes.BGR2HSV);
                                         Cv2.InRange(hsvimg, Lower, Upper, bwimg);
+                                        ps = Cv2.FindContoursAsArray(bwimg, RetrievalModes.List, ContourApproximationModes.ApproxSimple).Where(c => Cv2.ContourArea(c) > 1000).Select(c => Cv2.ApproxPolyDP(c, _ApproxDPEpsilon, true)).FirstOrDefault();
                                         _windowDispatcher.Invoke(() =>
                                         {
                                             if (bwimg.IsDisposed) return;
                                             OpenCvSharp.Extensions.WriteableBitmapConverter.ToWriteableBitmap(bwimg, _back_thread_filter_img);
                                             FilterViewModel.Img = _back_thread_filter_img;
+                                            Window.DetectPoly.Points.Clear();
+                                            if (ps != null) {
+                                                foreach (var p in ps) {
+                                                    Window.DetectPoly.Points.Add(new System.Windows.Point(p.X, p.Y));
+                                                }
+                                            }
                                         });
                                         Thread.Sleep(1000 / 60 - 10);
                                         Camera.Read(img);

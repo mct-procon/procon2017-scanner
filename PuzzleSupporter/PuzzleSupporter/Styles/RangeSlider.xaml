@@ -26,7 +26,7 @@
                         <Setter Property="Template">
                             <Setter.Value>
                                 <ControlTemplate>
-                                    <Rectangle Height="20" Fill="#CC5B5B5B"/>
+                                    <Rectangle Height="10" Fill="#CC5B5B5B"/>
                                 </ControlTemplate>
                             </Setter.Value>
                         </Setter>
@@ -44,7 +44,7 @@
                 <RepeatButton Name="PART_LeftEdge" />
                 <Thumb Name="PART_LeftThumb"
                        Width="15"
-                       Height="20"
+                       Height="10"
                        Cursor="Arrow"/>
                 <Thumb Name="PART_MiddleThumb"
                        MinWidth="{TemplateBinding MinRangeWidth}"
@@ -54,7 +54,7 @@
                             <Setter Property="Template">
                                 <Setter.Value>
                                     <ControlTemplate>
-                                        <Rectangle Height="20"
+                                        <Rectangle Height="10"
                                                    Margin="0 1 0 0" 
                                                    Fill="#02FFFFFF" Stroke="Red" StrokeThickness="1" />
                                     </ControlTemplate>
@@ -65,7 +65,7 @@
                 </Thumb>
                 <Thumb Name="PART_RightThumb"
                        Width="15"
-                       Height="20"
+                       Height="10"
                        Cursor="Arrow"/>
                 <RepeatButton Name="PART_RightEdge" />
             </StackPanel>

@@ -18,35 +18,38 @@
             <RowDefinition Height="{Binding ElementName=WinChro, Path=CaptionHeight}"/>
             <RowDefinition/>
         </Grid.RowDefinitions>
-        <Grid x:Name="ContentGrid" Grid.RowSpan="2" Background="White">
-            <Grid.Triggers>
-                <EventTrigger RoutedEvent="MouseEnter">
-                    <BeginStoryboard Name="CaptionFadeIn">
-                        <Storyboard>
-                            <DoubleAnimation Storyboard.TargetName="CaptionGrid" Storyboard.TargetProperty="Opacity" To="0.1" Duration="0:0:0.8">
-                                <DoubleAnimation.EasingFunction>
-                                    <SineEase EasingMode="EaseIn"/>
-                                </DoubleAnimation.EasingFunction>
-                            </DoubleAnimation>
-                        </Storyboard>
-                    </BeginStoryboard>
-                    <StopStoryboard BeginStoryboardName="CaptionFadeOut"/>
-                </EventTrigger>
-                <EventTrigger RoutedEvent="MouseLeave">
-                    <BeginStoryboard Name="CaptionFadeOut">
-                        <Storyboard>
-                            <DoubleAnimation Storyboard.TargetName="CaptionGrid" Storyboard.TargetProperty="Opacity" To="1" Duration="0:0:0.8">
-                                <DoubleAnimation.EasingFunction>
-                                    <SineEase EasingMode="EaseIn"/>
-                                </DoubleAnimation.EasingFunction>
-                            </DoubleAnimation>
-                        </Storyboard>
-                    </BeginStoryboard>
-                    <StopStoryboard BeginStoryboardName="CaptionFadeIn"/>
-                </EventTrigger>
-            </Grid.Triggers>
-            <Image Source="{Binding CameraImage}"/>
-        </Grid>
+        <Viewbox  x:Name="ContentGrid" Grid.RowSpan="2">
+            <Grid>
+                <Grid.Triggers>
+                    <EventTrigger RoutedEvent="MouseEnter">
+                        <BeginStoryboard Name="CaptionFadeIn">
+                            <Storyboard>
+                                <DoubleAnimation Storyboard.TargetName="CaptionGrid" Storyboard.TargetProperty="Opacity" To="0.1" Duration="0:0:0.8">
+                                    <DoubleAnimation.EasingFunction>
+                                        <SineEase EasingMode="EaseIn"/>
+                                    </DoubleAnimation.EasingFunction>
+                                </DoubleAnimation>
+                            </Storyboard>
+                        </BeginStoryboard>
+                        <StopStoryboard BeginStoryboardName="CaptionFadeOut"/>
+                    </EventTrigger>
+                    <EventTrigger RoutedEvent="MouseLeave">
+                        <BeginStoryboard Name="CaptionFadeOut">
+                            <Storyboard>
+                                <DoubleAnimation Storyboard.TargetName="CaptionGrid" Storyboard.TargetProperty="Opacity" To="1" Duration="0:0:0.8">
+                                    <DoubleAnimation.EasingFunction>
+                                        <SineEase EasingMode="EaseIn"/>
+                                    </DoubleAnimation.EasingFunction>
+                                </DoubleAnimation>
+                            </Storyboard>
+                        </BeginStoryboard>
+                        <StopStoryboard BeginStoryboardName="CaptionFadeIn"/>
+                    </EventTrigger>
+                </Grid.Triggers>
+                <Image Source="{Binding CameraImage}" HorizontalAlignment="Left" VerticalAlignment="Top" Stretch="None"/>
+                <Polygon x:Name="DetectPoly" Stroke="Red" StrokeThickness="1" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+            </Grid>
+        </Viewbox>
         <Grid x:Name="CaptionGrid">
             <Grid.Resources>
                 <ResourceDictionary Source="/Styles/CaptionDesign.xaml"/>
@@ -63,12 +66,12 @@
             <Button x:Name="CloseButton" Style="{StaticResource ResourceKey=CloseButton}" Content="r" HorizontalAlignment="Right" VerticalAlignment="Top" Click="CloseButton_Click"/>
         </Grid>
 
-        <StackPanel Grid.Row="1" HorizontalAlignment="Right" VerticalAlignment="Top" Width="350" Background="#99FFFFFF">
-            <StackPanel.Resources>
+        <Grid Grid.Row="1" HorizontalAlignment="Right" VerticalAlignment="Top" Width="350" Background="#99FFFFFF">
+            <Grid.Resources>
                 <ResourceDictionary Source="Styles/RangeSlider.xaml"/>
-            </StackPanel.Resources>
-            <TextBlock Text="HSV Range" FontSize="25" Margin="5,5,0,5"/>
-            <controls:RangeSlider MinRangeWidth="0" Maximum="180" Minimum="0" LowerValue="{Binding H_Lower}" UpperValue="{Binding H_Upper}" Margin="5,5,5,5">
+            </Grid.Resources>
+            <TextBlock Text="HSV Range" FontSize="18" Margin="5,5,0,5" VerticalAlignment="Top"/>
+            <controls:RangeSlider MinRangeWidth="0" Maximum="180" Minimum="0" LowerValue="{Binding H_Lower}" UpperValue="{Binding H_Upper}" Margin="5,28,5,5" VerticalAlignment="Top">
                 <controls:RangeSlider.Background>
                     <LinearGradientBrush StartPoint="0,1"
                                      EndPoint="1,0">
@@ -81,7 +84,7 @@
                     </LinearGradientBrush>
                 </controls:RangeSlider.Background>
             </controls:RangeSlider>
-            <controls:RangeSlider MinRangeWidth="0" Minimum="0" Maximum="255" LowerValue="{Binding S_Lower}" UpperValue="{Binding S_Upper}" Margin="5,5,5,5">
+            <controls:RangeSlider MinRangeWidth="0" Minimum="0" Maximum="255" LowerValue="{Binding S_Lower}" UpperValue="{Binding S_Upper}" Margin="5,43,5,5" VerticalAlignment="Top">
                 <controls:RangeSlider.Background>
                     <LinearGradientBrush StartPoint="0,1"
                                      EndPoint="1,0">
@@ -90,7 +93,7 @@
                     </LinearGradientBrush>
                 </controls:RangeSlider.Background>
             </controls:RangeSlider>
-            <controls:RangeSlider MinRangeWidth="0" Minimum="0" Maximum="255"  LowerValue="{Binding V_Lower}" UpperValue="{Binding V_Upper}" Margin="5,5,10,5">
+            <controls:RangeSlider MinRangeWidth="0" Minimum="0" Maximum="255"  LowerValue="{Binding V_Lower}" UpperValue="{Binding V_Upper}" Margin="5,58,10,5" VerticalAlignment="Top">
                 <controls:RangeSlider.Background>
                     <LinearGradientBrush StartPoint="0,1"
                                      EndPoint="1,0">
@@ -99,7 +102,10 @@
                     </LinearGradientBrush>
                 </controls:RangeSlider.Background>
             </controls:RangeSlider>
-        </StackPanel>
+            <TextBlock Text="ApproxDP Epsilon" FontSize="18" Margin="5,74,5,5" VerticalAlignment="Top"/>
+            <Slider x:Name="ApproxDPEpsilonSlider" Value="{Binding ApproxDPEpsilon}" SmallChange="0.01" Maximum="100" VerticalAlignment="Top" Margin="5,102,50,5"/>
+            <TextBlock Text="{Binding ElementName=ApproxDPEpsilonSlider, Path=Value, Mode=OneWay}" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,102,5,5" />
+        </Grid>
 
 
 
