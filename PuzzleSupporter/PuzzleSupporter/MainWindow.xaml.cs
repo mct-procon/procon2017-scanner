@@ -147,7 +147,7 @@ namespace PuzzleSupporter {
                                         InformWindow.Closing += (ss, ee) => {
                                             if (_isAlive) ee.Cancel = true;
                                         };
-                                        ApproxDPEllipse = 1.5;
+                                        ApproxDPEpsilon = 1.5;
                                         InformWindow.Show();
                                         FilterWindow.Show();
                                     });
@@ -158,20 +158,20 @@ namespace PuzzleSupporter {
                                         _windowDispatcher.Invoke(() => {
                                             if (img.IsDisposed) return;
                                             OpenCvSharp.Extensions.WriteableBitmapConverter.ToWriteableBitmap(img, _back_thread_camera_img);
-                                            QrSource.UpdateImage(_back_thread_camera_img);
-                                            QrResult = QrReader.Decode(QrSource);
-                                            if (QrResult != null)
-                                                InformViewModel.TestData = QrResult.Text;
                                             CameraImage = _back_thread_camera_img;
+                                            QrSource.UpdateImage(_back_thread_camera_img);
                                         });
                                         Cv2.CvtColor(img, hsvimg, ColorConversionCodes.BGR2HSV);
                                         Cv2.InRange(hsvimg, Lower, Upper, bwimg);
                                         ps = Cv2.FindContoursAsArray(bwimg, RetrievalModes.List, ContourApproximationModes.ApproxSimple).Where(c => Cv2.ContourArea(c) > 1000).Select(c => Cv2.ApproxPolyDP(c, _ApproxDPEpsilon, true)).FirstOrDefault();
+                                        QrResult = QrReader.Decode(QrSource);
                                         _windowDispatcher.Invoke(() =>
                                         {
                                             if (bwimg.IsDisposed) return;
                                             OpenCvSharp.Extensions.WriteableBitmapConverter.ToWriteableBitmap(bwimg, _back_thread_filter_img);
                                             FilterViewModel.Img = _back_thread_filter_img;
+                                            if (QrResult != null)
+                                                InformViewModel.TestData = QrResult.Text;
                                             Window.DetectPoly.Points.Clear();
                                             if (ps != null) {
                                                 foreach (var p in ps) {
@@ -179,7 +179,7 @@ namespace PuzzleSupporter {
                                                 }
                                             }
                                         });
-                                        Thread.Sleep(1000 / 60 - 10);
+                                        Thread.Sleep(App._fps);
                                         Camera.Read(img);
                                     }
                                     _windowDispatcher.Invoke(() => {

@@ -12,6 +12,10 @@ namespace PuzzleSupporter {
     /// </summary>
     public partial class App : Application
     {
+        private const int FPS = 10;            // ここでFPSを設定（多少ぶれます）
+
+        public const int _fps = 1000 / FPS;
+
         private void Application_Startup(object sender, StartupEventArgs e)
         {
             (new MainWindow(0)).Show();
