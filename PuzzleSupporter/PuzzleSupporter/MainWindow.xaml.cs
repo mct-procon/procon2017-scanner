@@ -24,6 +24,8 @@ using ZXing;
 using Prism.Commands;
 using Prism.Mvvm;
 
+using ZeroFormatter;
+
 namespace PuzzleSupporter {
     /// <summary>
     /// MainWindow.xaml の相互作用ロジック
@@ -62,9 +64,9 @@ namespace PuzzleSupporter {
             internal Scalar Lower = new Scalar(0, 0, 0);
             internal FilterPreviewWindow FilterWindow;
             internal FilterPreviewWindow.ViewModel FilterViewModel;
-            internal InformationWindow InformWindow;
-            internal InformationWindow.ViewModel InformViewModel;
             internal double _ApproxDPEpsilon;
+
+            internal string DetectedQRCode = "Nothing";
 
             internal ViewModel(Dispatcher disp, MainWindow win) {
                 _windowDispatcher = disp;
@@ -111,6 +113,11 @@ namespace PuzzleSupporter {
                 set => SetProperty(ref _ApproxDPEpsilon, value);
             }
 
+            public string DetectedQRCodeForShow {
+                get => "[Sending QR Code]\n" + DetectedQRCode;
+                set => SetProperty(ref DetectedQRCode, value);
+            }
+
             private PointCollection PointCollectionCache;
             internal void BeginCaptureing() {
                 _cameraThread = new Thread(() => {
@@ -124,7 +131,6 @@ namespace PuzzleSupporter {
                             });
                             return;
                         }
-                        //System.Drawing.Bitmap bmp = new System.Drawing.Bitmap(Camera.FrameWidth, Camera.FrameHeight);
                         BarcodeReader QrReader = new BarcodeReader();
                         Result QrResult = null;
                         var QrSource = new PuzzleSupporter.ZXingNet.BitmapSourceLuminanceSourceEx(Camera.FrameWidth, Camera.FrameHeight);
@@ -139,42 +145,42 @@ namespace PuzzleSupporter {
                                         FilterViewModel = new FilterPreviewWindow.ViewModel();
                                         FilterWindow.DataContext = FilterViewModel;
                                         FilterWindow.Closing += (ss, ee) => {
-                                            if (_isAlive) ee.Cancel = true;
-                                        };
-                                        InformWindow = new InformationWindow();
-                                        InformViewModel = new InformationWindow.ViewModel();
-                                        InformWindow.DataContext = InformViewModel;
-                                        InformWindow.Closing += (ss, ee) => {
-                                            if (_isAlive) ee.Cancel = true;
+                                            if (_isAlive)
+                                                ee.Cancel = true;
                                         };
                                         ApproxDPEpsilon = 1.5;
-                                        InformWindow.Show();
                                         FilterWindow.Show();
                                     });
 
-                                    OpenCvSharp.Point[] ps;
-                                    Camera.Read(img);
+                                    OpenCvSharp.Point[] DetectedPolygon;
+                                    if (!Camera.Read(img)) { 
+                                        MessageBox.Show("Cannot read image from imaging Device...", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                                        _windowDispatcher.Invoke(() => {
+                                            FilterWindow.Close();
+                                        });
+                                        _isAlive = false;
+                                    }
                                     while (_isAlive) {
                                         _windowDispatcher.Invoke(() => {
-                                            if (img.IsDisposed) return;
+                                            if (img.IsDisposed || img.Rows * img.Cols == 0) return;
                                             OpenCvSharp.Extensions.WriteableBitmapConverter.ToWriteableBitmap(img, _back_thread_camera_img);
                                             CameraImage = _back_thread_camera_img;
                                             QrSource.UpdateImage(_back_thread_camera_img);
                                         });
                                         Cv2.CvtColor(img, hsvimg, ColorConversionCodes.BGR2HSV);
                                         Cv2.InRange(hsvimg, Lower, Upper, bwimg);
-                                        ps = Cv2.FindContoursAsArray(bwimg, RetrievalModes.List, ContourApproximationModes.ApproxSimple).Where(c => Cv2.ContourArea(c) > 1000).Select(c => Cv2.ApproxPolyDP(c, _ApproxDPEpsilon, true)).FirstOrDefault();
+                                        DetectedPolygon = Cv2.FindContoursAsArray(bwimg, RetrievalModes.List, ContourApproximationModes.ApproxSimple).Where(c => Cv2.ContourArea(c) > 1000).Select(c => Cv2.ApproxPolyDP(c, _ApproxDPEpsilon, true)).FirstOrDefault();
                                         QrResult = QrReader.Decode(QrSource);
                                         _windowDispatcher.Invoke(() =>
                                         {
-                                            if (bwimg.IsDisposed) return;
+                                            if (bwimg.IsDisposed || bwimg.Rows * bwimg.Cols == 0) return;
                                             OpenCvSharp.Extensions.WriteableBitmapConverter.ToWriteableBitmap(bwimg, _back_thread_filter_img);
                                             FilterViewModel.Img = _back_thread_filter_img;
                                             if (QrResult != null)
-                                                InformViewModel.TestData = QrResult.Text;
+                                                DetectedQRCodeForShow = QrResult.Text;
                                             Window.DetectPoly.Points.Clear();
-                                            if (ps != null) {
-                                                foreach (var p in ps) {
+                                            if (DetectedPolygon != null) {
+                                                foreach (var p in DetectedPolygon) {
                                                     Window.DetectPoly.Points.Add(new System.Windows.Point(p.X, p.Y));
                                                 }
                                             }
@@ -184,7 +190,6 @@ namespace PuzzleSupporter {
                                     }
                                     _windowDispatcher.Invoke(() => {
                                         FilterWindow.Close();
-                                        InformWindow.Close();
                                     });
                                 }
                             }
@@ -196,6 +201,36 @@ namespace PuzzleSupporter {
 
             internal void Stop() {
                 _isAlive = false;
+            }
+        }
+
+        [ZeroFormattable]
+        public struct SendablePoint {
+            [Index(0)]
+            public int X;
+            [Index(1)]
+            public int Y;
+
+            public SendablePoint(int X, int Y) {
+                this.X = X; this.Y = Y;
+            }
+
+            public static implicit operator SendablePoint(OpenCvSharp.Point p)
+                => new SendablePoint(p.X, p.Y);
+        } 
+
+        [ZeroFormattable]
+        public class SendablePolygon {
+            [Index(0)]
+            public virtual List<SendablePoint> Points { get; set; }
+
+            public SendablePolygon() { }
+
+            public SendablePolygon(OpenCvSharp.Point[] pts) {
+                Points = new List<SendablePoint>(pts.Length);
+                foreach(var p in pts) {
+                    Points.Add(p);
+                }
             }
         }
 

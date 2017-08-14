@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:PuzzleSupporter"
         xmlns:controls="clr-namespace:PuzzleSupporter.Controls"
         x:Name="ThisWindow"
-        Title="0 - PuzzleSupporter" Height="300" Width="492.373" Closed="ThisWindow_Closed" Loaded="Window_Loaded">
+        Title="0 - PuzzleSupporter" Height="500" Width="800" Closed="ThisWindow_Closed" Loaded="Window_Loaded">
     <Window.Resources>
         <local:MaximizeNormalizeConverter x:Key="MaximizeNormalizeConverter"/>
     </Window.Resources>
@@ -14,11 +14,15 @@
         <WindowChrome x:Name="WinChro" GlassFrameThickness="-1" CaptionHeight="40"/>
     </WindowChrome.WindowChrome>
     <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="300"/>
+        </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="{Binding ElementName=WinChro, Path=CaptionHeight}"/>
             <RowDefinition/>
         </Grid.RowDefinitions>
-        <Viewbox  x:Name="ContentGrid" Grid.RowSpan="2">
+        <Viewbox  x:Name="ContentGrid" Grid.RowSpan="2" Grid.Column="0">
             <Grid>
                 <Grid.Triggers>
                     <EventTrigger RoutedEvent="MouseEnter">
@@ -47,10 +51,10 @@
                     </EventTrigger>
                 </Grid.Triggers>
                 <Image Source="{Binding CameraImage}" HorizontalAlignment="Left" VerticalAlignment="Top" Stretch="None"/>
-                <Polygon x:Name="DetectPoly" Stroke="Red" StrokeThickness="1" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+                <Polygon x:Name="DetectPoly" Stroke="Red" StrokeThickness="1" HorizontalAlignment="Left" VerticalAlignment="Top" Fill="#33FF0000"/>
             </Grid>
         </Viewbox>
-        <Grid x:Name="CaptionGrid">
+        <Grid x:Name="CaptionGrid" Grid.ColumnSpan="2">
             <Grid.Resources>
                 <ResourceDictionary Source="/Styles/CaptionDesign.xaml"/>
             </Grid.Resources>
@@ -66,7 +70,7 @@
             <Button x:Name="CloseButton" Style="{StaticResource ResourceKey=CloseButton}" Content="r" HorizontalAlignment="Right" VerticalAlignment="Top" Click="CloseButton_Click"/>
         </Grid>
 
-        <Grid Grid.Row="1" HorizontalAlignment="Right" VerticalAlignment="Top" Width="350" Background="#99FFFFFF">
+        <Grid Grid.Row="1" Background="#FFFFFFFF" Grid.Column="1">
             <Grid.Resources>
                 <ResourceDictionary Source="Styles/RangeSlider.xaml"/>
             </Grid.Resources>
@@ -105,10 +109,11 @@
             <TextBlock Text="ApproxDP Epsilon" FontSize="18" Margin="5,74,5,5" VerticalAlignment="Top"/>
             <Slider x:Name="ApproxDPEpsilonSlider" Value="{Binding ApproxDPEpsilon}" SmallChange="0.01" Maximum="100" VerticalAlignment="Top" Margin="5,102,50,5"/>
             <TextBlock Text="{Binding ElementName=ApproxDPEpsilonSlider, Path=Value, Mode=OneWay}" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,102,5,5" />
+
+            <Button Content="[Sending Polygon]&#xA;Detected"  VerticalAlignment="Top" Margin="5,130,5,0" Height="60" RenderTransformOrigin="0.5,0.5" Background="Red" Foreground="White"/>
+            <Button Content="{Binding DetectedQRCodeForShow}"  VerticalAlignment="Top" Margin="5,200,5,0" Height="60" RenderTransformOrigin="0.5,0.5" Background="Blue" Foreground="White"/>
+
         </Grid>
-
-
-
     </Grid>
 
 </Window>
