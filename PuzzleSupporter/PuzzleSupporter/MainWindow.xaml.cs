@@ -24,8 +24,6 @@ using ZXing;
 using Prism.Commands;
 using Prism.Mvvm;
 
-using ZeroFormatter;
-
 namespace PuzzleSupporter {
     /// <summary>
     /// MainWindow.xaml の相互作用ロジック
@@ -201,36 +199,6 @@ namespace PuzzleSupporter {
 
             internal void Stop() {
                 _isAlive = false;
-            }
-        }
-
-        [ZeroFormattable]
-        public struct SendablePoint {
-            [Index(0)]
-            public int X;
-            [Index(1)]
-            public int Y;
-
-            public SendablePoint(int X, int Y) {
-                this.X = X; this.Y = Y;
-            }
-
-            public static implicit operator SendablePoint(OpenCvSharp.Point p)
-                => new SendablePoint(p.X, p.Y);
-        } 
-
-        [ZeroFormattable]
-        public class SendablePolygon {
-            [Index(0)]
-            public virtual List<SendablePoint> Points { get; set; }
-
-            public SendablePolygon() { }
-
-            public SendablePolygon(OpenCvSharp.Point[] pts) {
-                Points = new List<SendablePoint>(pts.Length);
-                foreach(var p in pts) {
-                    Points.Add(p);
-                }
             }
         }
 
