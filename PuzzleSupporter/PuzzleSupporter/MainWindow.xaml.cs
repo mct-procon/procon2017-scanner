@@ -52,23 +52,33 @@ namespace PuzzleSupporter {
 
 
         public class ViewModel : BindableBase {
-            internal int DeviceId = 0;
-            internal WriteableBitmap _cameraImage;
-            internal Thread _cameraThread;
-            internal bool _isAlive = true;
-            internal Dispatcher _windowDispatcher;
-            internal MainWindow Window;
-            internal Scalar Upper = new Scalar(180, 255, 255);
-            internal Scalar Lower = new Scalar(0, 0, 0);
-            internal FilterPreviewWindow FilterWindow;
-            internal FilterPreviewWindow.ViewModel FilterViewModel;
-            internal double _ApproxDPEpsilon;
+            private int DeviceId = 0;
+            private WriteableBitmap _cameraImage;
+            private Thread _cameraThread;
+            private bool _isAlive = true;
+            private Dispatcher _windowDispatcher;
+            private MainWindow Window;
+            private Scalar Upper = new Scalar(180, 255, 255);
+            private Scalar Lower = new Scalar(0, 0, 0);
+            private FilterPreviewWindow FilterWindow;
+            private FilterPreviewWindow.ViewModel FilterViewModel;
+            private double _ApproxDPEpsilon;
+            private Procon2017MCTProtocol.IProconPuzzleService PuzzService;
 
-            internal string DetectedQRCode = "Nothing";
+            private string DetectedQRCode = "Nothing";
+
+            private DelegateCommand _SendQRCodeCommand;
+            private DelegateCommand _SendPolygonCommand;
 
             internal ViewModel(Dispatcher disp, MainWindow win) {
                 _windowDispatcher = disp;
                 Window = win;
+                try {
+                    PuzzService = Network.WCF.StartWCFSender();
+                } catch {
+                    MessageBox.Show("ソルバとの接続に失敗しました．", "Connection Error", MessageBoxButton.OK, MessageBoxImage.Information);
+                    PuzzService = new Network.WCF.Dummy();
+                }
             }
 
             public WriteableBitmap CameraImage {
@@ -116,7 +126,10 @@ namespace PuzzleSupporter {
                 set => SetProperty(ref DetectedQRCode, value);
             }
 
-            private PointCollection PointCollectionCache;
+            public DelegateCommand SendQRCodeCommand =>
+                _SendQRCodeCommand ?? new DelegateCommand(SendQRCode);
+
+            private OpenCvSharp.Point[] DetectedPolygon;
             internal void BeginCaptureing() {
                 _cameraThread = new Thread(() => {
                     WriteableBitmap _back_thread_camera_img = null;
@@ -132,6 +145,7 @@ namespace PuzzleSupporter {
                         BarcodeReader QrReader = new BarcodeReader();
                         Result QrResult = null;
                         var QrSource = new PuzzleSupporter.ZXingNet.BitmapSourceLuminanceSourceEx(Camera.FrameWidth, Camera.FrameHeight);
+                        PointCollection PointCollectionCache;
                         using (var img = new Mat()) {
                             using (var hsvimg = new Mat()) {
                                 using (var bwimg = new Mat()) {
@@ -150,7 +164,6 @@ namespace PuzzleSupporter {
                                         FilterWindow.Show();
                                     });
 
-                                    OpenCvSharp.Point[] DetectedPolygon;
                                     if (!Camera.Read(img)) { 
                                         MessageBox.Show("Cannot read image from imaging Device...", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                                         _windowDispatcher.Invoke(() => {
@@ -195,6 +208,15 @@ namespace PuzzleSupporter {
                     }
                 });
                 _cameraThread.Start();
+            }
+
+            public void SendQRCode() =>
+                PuzzService.QRCode(DetectedQRCode);
+
+            public void SendPolygon() {
+                Procon2017MCTProtocol.SendablePolygon send = new Procon2017MCTProtocol.SendablePolygon();
+                send.Points.AddRange(DetectedPolygon.Select((p) => new Procon2017MCTProtocol.SendablePoint(p.X, p.Y)));
+                PuzzService.Polygon(send);
             }
 
             internal void Stop() {

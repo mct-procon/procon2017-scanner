@@ -13,5 +13,10 @@ namespace PuzzleSupporter.Network {
             ChannelFactory<IProconPuzzleService> factory = new ChannelFactory<IProconPuzzleService>(binding, new EndpointAddress(Parameter.ProconPuzzUri));
             return factory.CreateChannel();
         }
+
+        public class Dummy : IProconPuzzleService {
+            public void Polygon(SendablePolygon poly) { }
+            public void QRCode(string code_string) { }
+        }
     }
 }
