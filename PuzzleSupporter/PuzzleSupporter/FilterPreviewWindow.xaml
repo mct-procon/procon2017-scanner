@@ -4,10 +4,11 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:PuzzleSupporter"
+        xmlns:converters="clr-namespace:PuzzleSupporter.Converters"
         mc:Ignorable="d" x:Name="ThisWindow"
         Title="FilterPreviewWindow" Height="300" Width="300">
     <Window.Resources>
-        <local:MaximizeNormalizeConverter x:Key="MaximizeNormalizeConverter"/>
+        <converters:MaximizeNormalizeConverter x:Key="MaximizeNormalizeConverter"/>
     </Window.Resources>
     <WindowChrome.WindowChrome>
         <WindowChrome x:Name="WinChro" GlassFrameThickness="-1" CaptionHeight="40"/>

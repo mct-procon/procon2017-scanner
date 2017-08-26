@@ -4,11 +4,13 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:PuzzleSupporter"
+        xmlns:converters="clr-namespace:PuzzleSupporter.Converters"
         xmlns:controls="clr-namespace:PuzzleSupporter.Controls"
         x:Name="ThisWindow"
         Title="0 - PuzzleSupporter" Height="500" Width="800" Closed="ThisWindow_Closed" Loaded="Window_Loaded">
     <Window.Resources>
-        <local:MaximizeNormalizeConverter x:Key="MaximizeNormalizeConverter"/>
+        <converters:MaximizeNormalizeConverter x:Key="MaximizeNormalizeConverter"/>
+        <converters:DetectedStringConverter x:Key="DetectedStringConverter"/>
     </Window.Resources>
     <WindowChrome.WindowChrome>
         <WindowChrome x:Name="WinChro" GlassFrameThickness="-1" CaptionHeight="40"/>
@@ -110,8 +112,9 @@
             <Slider x:Name="ApproxDPEpsilonSlider" Value="{Binding ApproxDPEpsilon}" SmallChange="0.01" Maximum="100" VerticalAlignment="Top" Margin="5,102,50,5"/>
             <TextBlock Text="{Binding ElementName=ApproxDPEpsilonSlider, Path=Value, Mode=OneWay}" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,102,5,5" />
 
-            <Button Content="[Sending Polygon]&#xA;Detected"  VerticalAlignment="Top" Margin="5,130,5,0" Height="60" RenderTransformOrigin="0.5,0.5" Background="Red" Foreground="White"/>
-            <Button Content="{Binding DetectedQRCodeForShow}"  VerticalAlignment="Top" Margin="5,200,5,0" Height="60" RenderTransformOrigin="0.5,0.5" Background="Blue" Foreground="White"/>
+            <Button Content="[Sending Polygon]&#xA;Detected"  VerticalAlignment="Top" Margin="5,130,5,0" Height="60" RenderTransformOrigin="0.5,0.5" Background="Red" Foreground="White" Command="{Binding SendPolygonCommand}"/>
+            <Button Content="{Binding IsQrCodeDetected, Converter={StaticResource ResourceKey=DetectedStringConverter}}" IsEnabled="{Binding IsQrCodeDetected}" VerticalAlignment="Top" Margin="5,200,5,0" Height="60" RenderTransformOrigin="0.5,0.5" Background="Blue" Foreground="White" Command="{Binding StartDetectingQRCodeCommand}"/>
+            <Button Content="Append QrCode Data" Visibility="{Binding IsQrCodeDetecting, Converter={StaticResource ResourceKey=DetectedStringConverter}}" VerticalAlignment="Top" Margin="5,270,5,0" Height="60" RenderTransformOrigin="0.5,0.5" Background="Green" Foreground="White" Command="{Binding SendQRCodeCommand}"/>
 
         </Grid>
     </Grid>

@@ -52,7 +52,7 @@ namespace PuzzleSupporter {
 
 
         public class ViewModel : BindableBase {
-            private int DeviceId = 0;
+            internal int DeviceId = 0;
             private WriteableBitmap _cameraImage;
             private Thread _cameraThread;
             private bool _isAlive = true;
@@ -67,7 +67,8 @@ namespace PuzzleSupporter {
 
             private string DetectedQRCode = "Nothing";
 
-            private DelegateCommand _SendQRCodeCommand;
+            private DelegateCommand _StartDetectingQRCodeCommand;
+            private DelegateCommand _AppendQRCodeCommand;
             private DelegateCommand _SendPolygonCommand;
 
             internal ViewModel(Dispatcher disp, MainWindow win) {
@@ -121,15 +122,47 @@ namespace PuzzleSupporter {
                 set => SetProperty(ref _ApproxDPEpsilon, value);
             }
 
-            public string DetectedQRCodeForShow {
-                get => "[Sending QR Code]\n" + DetectedQRCode;
-                set => SetProperty(ref DetectedQRCode, value);
+            private bool isQrCodeDetected = false;
+            private bool isQrCodeDetecting = false;
+            private bool isBlueButtonEnable = false;
+
+            public bool IsQrCodeDetected {
+                get => isQrCodeDetected;
+                set => SetProperty(ref isQrCodeDetected, value);
+            }
+            public bool IsQrCodeDetecting {
+                get => isQrCodeDetecting;
+                set => SetProperty(ref isQrCodeDetecting, value);
             }
 
-            public DelegateCommand SendQRCodeCommand =>
-                _SendQRCodeCommand ?? new DelegateCommand(SendQRCode);
+            public bool IsBlueButtonEnable {
+                get => isBlueButtonEnable;
+                set => SetProperty(ref isBlueButtonEnable, value);
+            }
+
+            public DelegateCommand StartDetectingQRCodeCommand { 
+                get {
+                    if (_StartDetectingQRCodeCommand == null)
+                        return (_StartDetectingQRCodeCommand = new DelegateCommand(StartDetectingQRCode));
+                    else
+                        return _StartDetectingQRCodeCommand;
+                }
+            }
+
+            public DelegateCommand AppendQRCodeCommand {
+                get {
+                    if (_AppendQRCodeCommand == null)
+                        return (_AppendQRCodeCommand = new DelegateCommand(AppendQRCode));
+                    else
+                        return _StartDetectingQRCodeCommand;
+                }
+            }
+
+            public DelegateCommand SendPolygonCommand =>
+                _SendPolygonCommand ?? new DelegateCommand(SendPolygon);
 
             private OpenCvSharp.Point[] DetectedPolygon;
+            private Parser.PolygonParser polygonParser;
             internal void BeginCaptureing() {
                 _cameraThread = new Thread(() => {
                     WriteableBitmap _back_thread_camera_img = null;
@@ -187,8 +220,11 @@ namespace PuzzleSupporter {
                                             if (bwimg.IsDisposed || bwimg.Rows * bwimg.Cols == 0) return;
                                             OpenCvSharp.Extensions.WriteableBitmapConverter.ToWriteableBitmap(bwimg, _back_thread_filter_img);
                                             FilterViewModel.Img = _back_thread_filter_img;
-                                            if (QrResult != null)
-                                                DetectedQRCodeForShow = QrResult.Text;
+                                            if (QrResult != null) {
+                                                IsQrCodeDetected = true;
+                                                IsBlueButtonEnable = true;
+                                                DetectedQRCode = QrResult.Text;
+                                            }
                                             Window.DetectPoly.Points.Clear();
                                             if (DetectedPolygon != null) {
                                                 foreach (var p in DetectedPolygon) {
@@ -210,8 +246,25 @@ namespace PuzzleSupporter {
                 _cameraThread.Start();
             }
 
-            public void SendQRCode() =>
-                PuzzService.QRCode(DetectedQRCode);
+            public void StartDetectingQRCode() {
+                if(IsQrCodeDetecting) {
+                    IsQrCodeDetecting = false;
+                    IsQrCodeDetected = false;
+                    IsBlueButtonEnable = false;
+                    PuzzService.QRCode(polygonParser.SendData);
+                }else {
+                    IsQrCodeDetecting = true;
+                    Parser.PolygonParser.Read(DetectedQRCode).ContinueWith( result => {
+                        polygonParser = result.Result;
+                    }, TaskScheduler.Current);
+                }
+            }
+
+            public void AppendQRCode() {
+                if (!IsQrCodeDetecting)
+                    return;
+                polygonParser.Append(DetectedQRCode);
+            }
 
             public void SendPolygon() {
                 Procon2017MCTProtocol.SendablePolygon send = new Procon2017MCTProtocol.SendablePolygon();
@@ -241,18 +294,5 @@ namespace PuzzleSupporter {
             Thread.Sleep(1000);
         }
 
-    }
-
-    public class MaximizeNormalizeConverter : IValueConverter {
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture) {
-            if (value is WindowState)
-                return (WindowState)value == WindowState.Normal ? "1" : "2";
-            else
-                throw new System.FormatException("Bad Type. Need WindowState Typed Value.");
-        }
-
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) {
-            throw new NotImplementedException();
-        }
     }
 }
