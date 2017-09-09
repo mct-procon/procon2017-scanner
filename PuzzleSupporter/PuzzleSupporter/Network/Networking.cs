@@ -16,7 +16,7 @@ namespace PuzzleSupporter.Network {
 
         public class Dummy : IProconPuzzleService {
             public void Polygon(SendablePolygon poly) { }
-            public void QRCode(string code_string) { }
+            public void QRCode(QRCodeData data) { }
         }
     }
 }
