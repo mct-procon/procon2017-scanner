@@ -107,6 +107,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Converters\DetectedVisibilityConverter.cs" />
     <Compile Include="Converters\DetectedStringConverter.cs" />
     <Compile Include="Converters\MaximizeNormalizeConverter.cs" />
     <Compile Include="Network\Networking.cs" />

@@ -11,6 +11,7 @@
     <Window.Resources>
         <converters:MaximizeNormalizeConverter x:Key="MaximizeNormalizeConverter"/>
         <converters:DetectedStringConverter x:Key="DetectedStringConverter"/>
+        <converters:DetectedVisibilityConverter x:Key="DetectVisibilityConverter"/>
     </Window.Resources>
     <WindowChrome.WindowChrome>
         <WindowChrome x:Name="WinChro" GlassFrameThickness="-1" CaptionHeight="40"/>
@@ -114,8 +115,8 @@
 
             <Button Content="[Sending Polygon]&#xA;Detected"  VerticalAlignment="Top" Margin="5,130,5,0" Height="60" RenderTransformOrigin="0.5,0.5" Background="Red" Foreground="White" Command="{Binding SendPolygonCommand}"/>
             <Button Content="{Binding IsQrCodeDetected, Converter={StaticResource ResourceKey=DetectedStringConverter}}" IsEnabled="{Binding IsQrCodeDetected}" VerticalAlignment="Top" Margin="5,200,5,0" Height="60" RenderTransformOrigin="0.5,0.5" Background="Blue" Foreground="White" Command="{Binding StartDetectingQRCodeCommand}"/>
-            <Button Content="Append QrCode Data" Visibility="{Binding IsQrCodeDetecting, Converter={StaticResource ResourceKey=DetectedStringConverter}}" VerticalAlignment="Top" Margin="5,270,5,0" Height="60" RenderTransformOrigin="0.5,0.5" Background="Green" Foreground="White" Command="{Binding SendQRCodeCommand}"/>
-
+            <Button Content="Append QrCode Data" Visibility="{Binding IsQrCodeDetecting, Converter={StaticResource ResourceKey=DetectVisibilityConverter}}" VerticalAlignment="Top" Margin="5,270,5,0" Height="60" RenderTransformOrigin="0.5,0.5" Background="Green" Foreground="White" Command="{Binding AppendQRCodeCommand}"/>
+            <TextBox Text="{Binding DetectedQrCode}" Margin="5,335,5,10" IsReadOnly="True"/>
         </Grid>
     </Grid>
 

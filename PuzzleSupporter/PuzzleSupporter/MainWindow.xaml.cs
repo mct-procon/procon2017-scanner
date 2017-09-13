@@ -65,11 +65,11 @@ namespace PuzzleSupporter {
             private double _ApproxDPEpsilon;
             private Procon2017MCTProtocol.IProconPuzzleService PuzzService;
 
-            private string DetectedQRCode = "Nothing";
+            private string _DetectedQrCode = "Nothing";
+            private StringBuilder DetectedQrCodeToSend = new StringBuilder();
 
             private DelegateCommand _StartDetectingQRCodeCommand;
             private DelegateCommand _AppendQRCodeCommand;
-            private DelegateCommand _SendPolygonCommand;
 
             internal ViewModel(Dispatcher disp, MainWindow win) {
                 _windowDispatcher = disp;
@@ -138,6 +138,11 @@ namespace PuzzleSupporter {
             public bool IsBlueButtonEnable {
                 get => isBlueButtonEnable;
                 set => SetProperty(ref isBlueButtonEnable, value);
+            }
+
+            public string DetectedQrCode {
+                get => _DetectedQrCode;
+                set => SetProperty(ref _DetectedQrCode, value);
             }
 
             public DelegateCommand StartDetectingQRCodeCommand { 
@@ -223,7 +228,7 @@ namespace PuzzleSupporter {
                                             if (QrResult != null) {
                                                 IsQrCodeDetected = true;
                                                 IsBlueButtonEnable = true;
-                                                DetectedQRCode = QrResult.Text;
+                                                DetectedQrCode = QrResult.Text;
                                             }
                                             Window.DetectPoly.Points.Clear();
                                             if (DetectedPolygon != null) {
@@ -251,19 +256,35 @@ namespace PuzzleSupporter {
                     IsQrCodeDetecting = false;
                     IsQrCodeDetected = false;
                     IsBlueButtonEnable = false;
-                    PuzzService.QRCode(polygonParser.SendData);
+                    Parser.PolygonParser.Read(DetectedQrCodeToSend.ToString()).ContinueWith(res => {
+                        if (res.IsFaulted) {
+                            MessageBox.Show("QRコードデータの解析に失敗しました．", "ERROR!", MessageBoxButton.OK, MessageBoxImage.Error);
+                            return false;
+                        }
+                        PuzzService.QRCode(res.Result.SendData);
+                        return true;
+                    }).ContinueWith(res => {
+                        if (res.IsFaulted) {
+                            MessageBox.Show("QRコードデータの送信に失敗しました．", "ERROR!", MessageBoxButton.OK, MessageBoxImage.Error);
+                            return;
+                        }
+                        if (!res.Result)  // Ignore if Parsing Failed.
+                            return;
+                        IsBlueButtonEnable = true;
+
+                    }, TaskScheduler.Current);
                 }else {
                     IsQrCodeDetecting = true;
-                    Parser.PolygonParser.Read(DetectedQRCode).ContinueWith( result => {
-                        polygonParser = result.Result;
-                    }, TaskScheduler.Current);
+                    DetectedQrCodeToSend.Clear();
+                    DetectedQrCodeToSend.Append(_DetectedQrCode);
                 }
             }
 
             public void AppendQRCode() {
                 if (!IsQrCodeDetecting)
                     return;
-                polygonParser.Append(DetectedQRCode);
+                DetectedQrCodeToSend.Append(' ');
+                DetectedQrCodeToSend.Append(_DetectedQrCode);
             }
 
             public void SendPolygon() {

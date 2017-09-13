@@ -8,13 +8,13 @@ using System.Windows;
 using System.Windows.Data;
 
 namespace PuzzleSupporter.Converters {
-    public class DetectedStringConverter : IValueConverter {
+    public class DetectedVisibilityConverter : IValueConverter {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture) {
             switch (value) {
                 case bool v:
-                    return v ? "Detected" : "Not Detected";
+                    return v ? Visibility.Visible : Visibility.Hidden;
                 default:
-                    return "Something wrong...";
+                    return Visibility.Hidden;
             }
         }
 
