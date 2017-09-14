@@ -66,9 +66,9 @@ namespace PuzzleSupporter {
             private Procon2017MCTProtocol.IProconPuzzleService PuzzService;
 
             private string _DetectedQrCode = "Nothing";
-            private StringBuilder DetectedQrCodeToSend = new StringBuilder();
 
             private DelegateCommand _StartDetectingQRCodeCommand;
+            private DelegateCommand _SendQRCodeAsHintCommand;
             private DelegateCommand _AppendQRCodeCommand;
 
             internal ViewModel(Dispatcher disp, MainWindow win) {
@@ -145,26 +145,14 @@ namespace PuzzleSupporter {
                 set => SetProperty(ref _DetectedQrCode, value);
             }
 
-            public DelegateCommand StartDetectingQRCodeCommand { 
-                get {
-                    if (_StartDetectingQRCodeCommand == null)
-                        return (_StartDetectingQRCodeCommand = new DelegateCommand(StartDetectingQRCode));
-                    else
-                        return _StartDetectingQRCodeCommand;
-                }
-            }
+            public DelegateCommand SendQrCodeAsHintCommand =>
+                _SendQRCodeAsHintCommand ?? (_SendQRCodeAsHintCommand = new DelegateCommand(SendQrCodeAsHint));
 
-            public DelegateCommand AppendQRCodeCommand {
-                get {
-                    if (_AppendQRCodeCommand == null)
-                        return (_AppendQRCodeCommand = new DelegateCommand(AppendQRCode));
-                    else
-                        return _StartDetectingQRCodeCommand;
-                }
-            }
+            public DelegateCommand StartDetectingQRCodeCommand =>
+                _StartDetectingQRCodeCommand ?? (_StartDetectingQRCodeCommand = new DelegateCommand(StartDetectingQRCode));
 
-            public DelegateCommand SendPolygonCommand =>
-                _SendPolygonCommand ?? new DelegateCommand(SendPolygon);
+            public DelegateCommand AppendQRCodeCommand =>
+                _AppendQRCodeCommand ?? (_AppendQRCodeCommand = new DelegateCommand(AppendQRCode));
 
             private OpenCvSharp.Point[] DetectedPolygon;
             private Parser.PolygonParser polygonParser;
@@ -252,39 +240,44 @@ namespace PuzzleSupporter {
             }
 
             public void StartDetectingQRCode() {
-                if(IsQrCodeDetecting) {
+                Send(false);
+            }
+
+            public void SendQrCodeAsHint() {
+                Send(true);
+            }
+
+            private void Send(bool isHint) {
+                if (IsQrCodeDetecting) {
                     IsQrCodeDetecting = false;
                     IsQrCodeDetected = false;
                     IsBlueButtonEnable = false;
-                    Parser.PolygonParser.Read(DetectedQrCodeToSend.ToString()).ContinueWith(res => {
-                        if (res.IsFaulted) {
-                            MessageBox.Show("QRコードデータの解析に失敗しました．", "ERROR!", MessageBoxButton.OK, MessageBoxImage.Error);
-                            return false;
-                        }
-                        PuzzService.QRCode(res.Result.SendData);
-                        return true;
-                    }).ContinueWith(res => {
-                        if (res.IsFaulted) {
+                    Procon2017MCTProtocol.QRCodeData data = polygonParser.SendData;
+                    data.IsHint = isHint;
+                    Task.Run(() => PuzzService.QRCode(data)).ContinueWith(res => {
+                        if (res.IsFaulted)
                             MessageBox.Show("QRコードデータの送信に失敗しました．", "ERROR!", MessageBoxButton.OK, MessageBoxImage.Error);
-                            return;
-                        }
-                        if (!res.Result)  // Ignore if Parsing Failed.
-                            return;
-                        IsBlueButtonEnable = true;
-
+                        else
+                            IsBlueButtonEnable = true;
                     }, TaskScheduler.Current);
-                }else {
+                } else {
                     IsQrCodeDetecting = true;
-                    DetectedQrCodeToSend.Clear();
-                    DetectedQrCodeToSend.Append(_DetectedQrCode);
+                    Parser.PolygonParser.Read(DetectedQrCode).ContinueWith(res => {
+                        if (res.IsFaulted) 
+                            MessageBox.Show("QRコードデータの解析に失敗しました．", "ERROR!", MessageBoxButton.OK, MessageBoxImage.Error);
+                        else
+                            polygonParser = res.Result;
+                    }, TaskScheduler.Current);
                 }
             }
 
             public void AppendQRCode() {
                 if (!IsQrCodeDetecting)
                     return;
-                DetectedQrCodeToSend.Append(' ');
-                DetectedQrCodeToSend.Append(_DetectedQrCode);
+                polygonParser.Append(DetectedQrCode).ContinueWith(res => {
+                    if (res.IsFaulted) 
+                        MessageBox.Show("QRコードデータの解析に失敗しました．", "ERROR!", MessageBoxButton.OK, MessageBoxImage.Error);
+                }, TaskScheduler.Current);
             }
 
             public void SendPolygon() {

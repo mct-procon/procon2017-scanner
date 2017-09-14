@@ -114,9 +114,10 @@
             <TextBlock Text="{Binding ElementName=ApproxDPEpsilonSlider, Path=Value, Mode=OneWay}" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,102,5,5" />
 
             <Button Content="[Sending Polygon]&#xA;Detected"  VerticalAlignment="Top" Margin="5,130,5,0" Height="60" RenderTransformOrigin="0.5,0.5" Background="Red" Foreground="White" Command="{Binding SendPolygonCommand}"/>
+            <Button Content="Send As Hint!" Visibility="{Binding IsQrCodeDetecting, Converter={StaticResource ResourceKey=DetectVisibilityConverter}}" VerticalAlignment="Top" Margin="214,335,5,0" Height="84" RenderTransformOrigin="0.5,0.5" Background="Purple" Foreground="White" Command="{Binding SendQrCodeAsHintCommand}"/>
             <Button Content="{Binding IsQrCodeDetected, Converter={StaticResource ResourceKey=DetectedStringConverter}}" IsEnabled="{Binding IsQrCodeDetected}" VerticalAlignment="Top" Margin="5,200,5,0" Height="60" RenderTransformOrigin="0.5,0.5" Background="Blue" Foreground="White" Command="{Binding StartDetectingQRCodeCommand}"/>
             <Button Content="Append QrCode Data" Visibility="{Binding IsQrCodeDetecting, Converter={StaticResource ResourceKey=DetectVisibilityConverter}}" VerticalAlignment="Top" Margin="5,270,5,0" Height="60" RenderTransformOrigin="0.5,0.5" Background="Green" Foreground="White" Command="{Binding AppendQRCodeCommand}"/>
-            <TextBox Text="{Binding DetectedQrCode}" Margin="5,335,5,10" IsReadOnly="True"/>
+            <TextBox Text="{Binding DetectedQrCode}" TextWrapping="Wrap" Margin="5,335,91,10" IsReadOnly="True"/>
         </Grid>
     </Grid>
 
