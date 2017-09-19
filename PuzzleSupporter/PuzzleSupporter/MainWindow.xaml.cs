@@ -254,12 +254,12 @@ namespace PuzzleSupporter {
                     IsBlueButtonEnable = false;
                     Procon2017MCTProtocol.QRCodeData data = polygonParser.SendData;
                     data.IsHint = isHint;
-                    //using(var sw = new System.IO.StreamWriter("out.txt")) {
+                    //using (var sw = new System.IO.StreamWriter("out.txt")) {
                     //    sw.AutoFlush = false;
                     //    sw.WriteLine(data.Frames.Count);
-                    //    foreach(var p in data.Frames) {
+                    //    foreach (var p in data.Frames) {
                     //        sw.WriteLine(p.Points.Count);
-                    //        foreach(var pp in p.Points) {
+                    //        foreach (var pp in p.Points) {
                     //            sw.WriteLine($"{pp.X} {pp.Y}");
                     //        }
                     //    }

@@ -21,7 +21,7 @@ namespace PuzzleSupporter.Parser {
         }
 
         public Task Append(string Data) {
-            string QRCode = (string)Data.Clone();
+            string QRCode = Data + ":";
             return Task.Run(() => {
                 int polygons_count;
                 int itr = 0;
