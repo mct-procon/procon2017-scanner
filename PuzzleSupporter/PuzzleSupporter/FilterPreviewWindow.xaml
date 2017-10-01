@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:PuzzleSupporter"
         xmlns:converters="clr-namespace:PuzzleSupporter.Converters"
         mc:Ignorable="d" x:Name="ThisWindow"
-        Title="FilterPreviewWindow" Height="300" Width="300">
+        Title="FilterWindow 0 - PuzzleSupporter" Height="300" Width="300">
     <Window.Resources>
         <converters:MaximizeNormalizeConverter x:Key="MaximizeNormalizeConverter"/>
     </Window.Resources>

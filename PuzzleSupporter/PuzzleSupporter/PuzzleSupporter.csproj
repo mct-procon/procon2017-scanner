@@ -110,9 +110,16 @@
     <Compile Include="Converters\DetectedVisibilityConverter.cs" />
     <Compile Include="Converters\DetectedStringConverter.cs" />
     <Compile Include="Converters\MaximizeNormalizeConverter.cs" />
+    <Compile Include="Dialog\CameraSelectDialog.xaml.cs">
+      <DependentUpon>CameraSelectDialog.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Network\Networking.cs" />
     <Compile Include="Parser\PolygonParser.cs" />
     <Compile Include="ZXingNet\BitmapSourceLuminanceSourceEx.cs" />
+    <Page Include="Dialog\CameraSelectDialog.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="FilterPreviewWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

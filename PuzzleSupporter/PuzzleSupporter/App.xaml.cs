@@ -23,7 +23,7 @@ namespace PuzzleSupporter {
             if(commandargs.Length > 2 && int.TryParse(commandargs[1], out o)) {
                 (new MainWindow(o)).Show();
             } else {
-                (new MainWindow(0)).Show();
+                (new Dialog.CameraSelectDialog()).Show();
             }
         }
     }

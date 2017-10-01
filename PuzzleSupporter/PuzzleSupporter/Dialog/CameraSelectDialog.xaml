@@ -1,0 +1,14 @@
+﻿<Window x:Class="PuzzleSupporter.Dialog.CameraSelectDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:PuzzleSupporter.Dialog"
+        mc:Ignorable="d"
+        Title="CameraSelecting - PuzzleSupporter" Height="125.423" Width="444.915">
+    <Grid>
+        <TextBlock Text="Type the camera number." HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,10,0,0"/>
+        <TextBox x:Name="CameraNumBox" Text="0" Margin="10,31,10,0" VerticalAlignment="Top" TextChanged="CameraNumBox_TextChanged"/>
+        <Button Content="OK" VerticalAlignment="Bottom" HorizontalContentAlignment="Center" HorizontalAlignment="Right" Margin="0,0,10,10" Width="85" Click="Button_Click"/>
+    </Grid>
+</Window>

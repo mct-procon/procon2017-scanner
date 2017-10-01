@@ -254,25 +254,25 @@ namespace PuzzleSupporter {
                     IsBlueButtonEnable = false;
                     Procon2017MCTProtocol.QRCodeData data = polygonParser.SendData;
                     data.IsHint = isHint;
-                    //using (var sw = new System.IO.StreamWriter("out.txt")) {
-                    //    sw.AutoFlush = false;
-                    //    sw.WriteLine(data.Frames.Count);
-                    //    foreach (var p in data.Frames) {
-                    //        sw.WriteLine(p.Points.Count);
-                    //        foreach (var pp in p.Points) {
-                    //            sw.WriteLine($"{pp.X} {pp.Y}");
-                    //        }
-                    //    }
-                    //    sw.WriteLine();
-                    //    sw.WriteLine(data.Polygons.Count);
-                    //    foreach (var p in data.Polygons) {
-                    //        sw.WriteLine(p.Points.Count);
-                    //        foreach (var pp in p.Points) {
-                    //            sw.WriteLine($"{pp.X} {pp.Y}");
-                    //        }
-                    //    }
-                    //    sw.Flush();
-                    //}
+                    using (var sw = new System.IO.StreamWriter("out.txt")) {
+                        sw.AutoFlush = false;
+                        sw.WriteLine(data.Frames.Count);
+                        foreach (var p in data.Frames) {
+                            sw.WriteLine(p.Points.Count);
+                            foreach (var pp in p.Points) {
+                                sw.WriteLine($"{pp.X} {pp.Y}");
+                            }
+                        }
+                        sw.WriteLine();
+                        sw.WriteLine(data.Polygons.Count);
+                        foreach (var p in data.Polygons) {
+                            sw.WriteLine(p.Points.Count);
+                            foreach (var pp in p.Points) {
+                                sw.WriteLine($"{pp.X} {pp.Y}");
+                            }
+                        }
+                        sw.Flush();
+                    }
                     Task.Run(() => PuzzService.QRCode(data)).ContinueWith(res => {
                         if (res.IsFaulted)
                             MessageBox.Show("QRコードデータの送信に失敗しました．", "ERROR!", MessageBoxButton.OK, MessageBoxImage.Error);
