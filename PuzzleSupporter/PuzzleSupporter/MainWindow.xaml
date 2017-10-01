@@ -100,7 +100,7 @@
                     </LinearGradientBrush>
                 </controls:RangeSlider.Background>
             </controls:RangeSlider>
-            <controls:RangeSlider MinRangeWidth="0" Minimum="0" Maximum="255"  LowerValue="{Binding V_Lower}" UpperValue="{Binding V_Upper}" Margin="5,58,10,5" VerticalAlignment="Top">
+            <controls:RangeSlider MinRangeWidth="0" Minimum="0" Maximum="255"  LowerValue="{Binding V_Lower}" UpperValue="{Binding V_Upper}" Margin="5,58,5,0" VerticalAlignment="Top">
                 <controls:RangeSlider.Background>
                     <LinearGradientBrush StartPoint="0,1"
                                      EndPoint="1,0">
@@ -113,12 +113,15 @@
             <Slider x:Name="ApproxDPEpsilonSlider" Value="{Binding ApproxDPEpsilon}" SmallChange="0.01" Maximum="100" VerticalAlignment="Top" Margin="5,102,50,5"/>
             <TextBlock Text="{Binding ElementName=ApproxDPEpsilonSlider, Path=Value, Mode=OneWay}" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,102,5,5" />
 
-            <Button Content="[Sending Polygon]&#xA;Detected"  VerticalAlignment="Top" Margin="5,130,5,0" Height="60" RenderTransformOrigin="0.5,0.5" Background="Red" Foreground="White" Command="{Binding SendPolygonCommand}"/>
-            <Button Content="Send As Hint!" Visibility="{Binding IsQrCodeDetecting, Converter={StaticResource ResourceKey=DetectVisibilityConverter}}" VerticalAlignment="Top" Margin="214,335,5,0" Height="84" RenderTransformOrigin="0.5,0.5" Background="Purple" Foreground="White" Command="{Binding SendQrCodeAsHintCommand}"/>
-            <Button Content="{Binding IsQrCodeDetected, Converter={StaticResource ResourceKey=DetectedStringConverter}}" IsEnabled="{Binding IsQrCodeDetected}" VerticalAlignment="Top" Margin="5,200,5,0" Height="60" RenderTransformOrigin="0.5,0.5" Background="Blue" Foreground="White" Command="{Binding StartDetectingQRCodeCommand}"/>
-            <Button Content="Append QrCode Data" Visibility="{Binding IsQrCodeDetecting, Converter={StaticResource ResourceKey=DetectVisibilityConverter}}" VerticalAlignment="Top" Margin="5,270,5,0" Height="60" RenderTransformOrigin="0.5,0.5" Background="Green" Foreground="White" Command="{Binding AppendQRCodeCommand}"/>
-            <TextBox Text="{Binding DetectedQrCode}" TextWrapping="Wrap" Margin="5,335,91,10" IsReadOnly="True"/>
+            <Button Content="[Sending Polygon]&#xA;Detected"  VerticalAlignment="Top" Margin="5,130,5,0" Height="50" RenderTransformOrigin="0.5,0.5" Background="Red" Foreground="White" Command="{Binding SendPolygonCommand}"/>
+            <Button Content="Send As Hint!" Visibility="{Binding IsQrCodeDetecting, Converter={StaticResource ResourceKey=DetectVisibilityConverter}}" VerticalAlignment="Top" Margin="214,240,5,0" Height="65" RenderTransformOrigin="0.5,0.5" Background="Purple" Foreground="White" Command="{Binding SendQrCodeAsHintCommand}"/>
+            <Button Content="{Binding IsQrCodeDetected, Converter={StaticResource ResourceKey=DetectedStringConverter}}" IsEnabled="{Binding IsQrCodeDetected}" VerticalAlignment="Top" Margin="5,185,147,0" Height="50" RenderTransformOrigin="0.5,0.5" Background="Blue" Foreground="White" Command="{Binding StartDetectingQRCodeCommand}"/>
+            <Button Content="Append QrCode Data" Visibility="{Binding IsQrCodeDetecting, Converter={StaticResource ResourceKey=DetectVisibilityConverter}}" VerticalAlignment="Top" Margin="158,185,5,0" Height="50" RenderTransformOrigin="0.5,0.5" Background="Green" Foreground="White" Command="{Binding AppendQRCodeCommand}"/>
+            <TextBox Text="{Binding DetectedQrCode}" TextWrapping="Wrap" Margin="5,240,91,0" IsReadOnly="True" VerticalAlignment="Top" Height="65"/>
+            <TextBlock Text="FPS" Margin="5,310,5,90" FontSize="20"/>
+            <Slider Value="{Binding FPS}" Maximum="60" Minimum="1" Margin="5,344,100,0" VerticalAlignment="Top"/>
+            <TextBlock Text="{Binding FPS}" Margin="200,344,5,0" VerticalAlignment="Top"/>
+            <Button Content="Resume" VerticalAlignment="Top" Margin="5,367,5,0" Height="29" Command="{Binding ResumeCommand}"/>
         </Grid>
     </Grid>
-
 </Window>

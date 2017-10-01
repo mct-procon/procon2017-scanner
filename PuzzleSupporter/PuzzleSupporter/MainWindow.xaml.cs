@@ -60,16 +60,20 @@ namespace PuzzleSupporter {
             private MainWindow Window;
             private Scalar Upper = new Scalar(180, 255, 255);
             private Scalar Lower = new Scalar(0, 0, 0);
+            private double _fps = 30;
+            private int WaitTime = 1000 / 30;
             private FilterPreviewWindow FilterWindow;
             private FilterPreviewWindow.ViewModel FilterViewModel;
             private double _ApproxDPEpsilon;
             private Procon2017MCTProtocol.IProconPuzzleService PuzzService;
+            private VideoCapture Camera;
 
             private string _DetectedQrCode = "Nothing";
 
             private DelegateCommand _StartDetectingQRCodeCommand;
             private DelegateCommand _SendQRCodeAsHintCommand;
             private DelegateCommand _AppendQRCodeCommand;
+            private DelegateCommand _ResumeCommand;
 
             internal ViewModel(Dispatcher disp, MainWindow win) {
                 _windowDispatcher = disp;
@@ -153,90 +157,94 @@ namespace PuzzleSupporter {
 
             public DelegateCommand AppendQRCodeCommand =>
                 _AppendQRCodeCommand ?? (_AppendQRCodeCommand = new DelegateCommand(AppendQRCode));
+            public DelegateCommand ResumeCommand =>
+                _ResumeCommand ?? (_ResumeCommand = new DelegateCommand(ResumeBackThread));
+
+            public double FPS {
+                get => _fps;
+                set {
+                    SetProperty(ref _fps, value);
+                    WaitTime = 1000 / (int)_fps;
+                }
+            }
 
             private OpenCvSharp.Point[] DetectedPolygon;
             private Parser.PolygonParser polygonParser;
-            internal void BeginCaptureing() {
-                _cameraThread = new Thread(() => {
-                    WriteableBitmap _back_thread_camera_img = null;
-                    WriteableBitmap _back_thread_filter_img = null;
-                    using(var Camera = new VideoCapture(DeviceId)) {
-                        if (!Camera.IsOpened()) {
-                            _isAlive = false;
-                            _windowDispatcher.Invoke(() => {
-                                Window.Close();
-                            });
-                            return;
-                        }
-                        BarcodeReader QrReader = new BarcodeReader();
-                        Result QrResult = null;
-                        var QrSource = new PuzzleSupporter.ZXingNet.BitmapSourceLuminanceSourceEx(Camera.FrameWidth, Camera.FrameHeight);
-                        PointCollection PointCollectionCache;
-                        using (var img = new Mat()) {
-                            using (var hsvimg = new Mat()) {
-                                using (var bwimg = new Mat()) {
-                                    _windowDispatcher.Invoke(() => {
-                                        _back_thread_camera_img = new WriteableBitmap(Camera.FrameWidth, Camera.FrameHeight, 96, 96, PixelFormats.Bgr24, null);
-                                        _back_thread_filter_img = new WriteableBitmap(Camera.FrameWidth, Camera.FrameHeight, 96, 96, PixelFormats.Gray8, null);
-                                        PointCollectionCache = new PointCollection(20);
-                                        FilterWindow = new FilterPreviewWindow(DeviceId);
-                                        FilterViewModel = new FilterPreviewWindow.ViewModel();
-                                        FilterWindow.DataContext = FilterViewModel;
-                                        FilterWindow.Closing += (ss, ee) => {
-                                            if (_isAlive)
-                                                ee.Cancel = true;
-                                        };
-                                        ApproxDPEpsilon = 1.5;
-                                        FilterWindow.Show();
-                                    });
+            WriteableBitmap _back_thread_camera_img = null;
+            WriteableBitmap _back_thread_filter_img = null;
+            BarcodeReader QrReader = null;
+            Result QrResult = null;
+            ZXingNet.BitmapSourceLuminanceSourceEx QrSource = null;
+            PointCollection PointCollectionCache;
 
-                                    if (!Camera.Read(img)) { 
-                                        MessageBox.Show("Cannot read image from imaging Device...", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                                        _windowDispatcher.Invoke(() => {
-                                            FilterWindow.Close();
-                                        });
-                                        _isAlive = false;
-                                    }
-                                    while (_isAlive) {
-                                        _windowDispatcher.Invoke(() => {
-                                            if (img.IsDisposed || img.Rows * img.Cols == 0) return;
-                                            OpenCvSharp.Extensions.WriteableBitmapConverter.ToWriteableBitmap(img, _back_thread_camera_img);
-                                            CameraImage = _back_thread_camera_img;
-                                            QrSource.UpdateImage(_back_thread_camera_img);
-                                        });
-                                        Cv2.CvtColor(img, hsvimg, ColorConversionCodes.BGR2HSV);
-                                        Cv2.InRange(hsvimg, Lower, Upper, bwimg);
-                                        DetectedPolygon = Cv2.FindContoursAsArray(bwimg, RetrievalModes.List, ContourApproximationModes.ApproxSimple).Where(c => Cv2.ContourArea(c) > 1000).Select(c => Cv2.ApproxPolyDP(c, _ApproxDPEpsilon, true)).FirstOrDefault();
-                                        QrResult = QrReader.Decode(QrSource);
-                                        _windowDispatcher.Invoke(() =>
-                                        {
-                                            if (bwimg.IsDisposed || bwimg.Rows * bwimg.Cols == 0) return;
-                                            OpenCvSharp.Extensions.WriteableBitmapConverter.ToWriteableBitmap(bwimg, _back_thread_filter_img);
-                                            FilterViewModel.Img = _back_thread_filter_img;
-                                            if (QrResult != null) {
-                                                IsQrCodeDetected = true;
-                                                IsBlueButtonEnable = true;
-                                                DetectedQrCode = QrResult.Text;
-                                            }
-                                            Window.DetectPoly.Points.Clear();
-                                            if (DetectedPolygon != null) {
-                                                foreach (var p in DetectedPolygon) {
-                                                    Window.DetectPoly.Points.Add(new System.Windows.Point(p.X, p.Y));
-                                                }
-                                            }
-                                        });
-                                        Thread.Sleep(App._fps);
-                                        Camera.Read(img);
-                                    }
-                                    _windowDispatcher.Invoke(() => {
-                                        FilterWindow.Close();
-                                    });
-                                }
+            Mat img, hsvimg, bwimg;
+            internal void BeginCaptureing() {
+                Camera = new VideoCapture(DeviceId);
+                if (!Camera.IsOpened()) {
+                   Window.Close();
+                   return;
+                }
+                QrSource = new PuzzleSupporter.ZXingNet.BitmapSourceLuminanceSourceEx(Camera.FrameWidth, Camera.FrameHeight);
+                QrReader = new BarcodeReader();
+                _back_thread_camera_img = new WriteableBitmap(Camera.FrameWidth, Camera.FrameHeight, 96, 96, PixelFormats.Bgr24, null);
+                _back_thread_filter_img = new WriteableBitmap(Camera.FrameWidth, Camera.FrameHeight, 96, 96, PixelFormats.Gray8, null);
+                img = new Mat();
+                hsvimg = new Mat();
+                bwimg = new Mat();
+                if (!Camera.Read(img)) {
+                    MessageBox.Show("Cannot read image from imaging Device...", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    FilterWindow.Close();
+                    return;
+                }
+                PointCollectionCache = new PointCollection(20);
+                FilterWindow = new FilterPreviewWindow(DeviceId);
+                FilterViewModel = new FilterPreviewWindow.ViewModel();
+                FilterWindow.DataContext = FilterViewModel;
+                FilterWindow.Closing += (ss, ee) => {
+                    if (_isAlive)
+                        ee.Cancel = true;
+                };
+                ApproxDPEpsilon = 1.5;
+                FilterWindow.Show();
+
+                _cameraThread = new Thread(CameraThreadMethod);
+                _cameraThread.Start();
+            }
+
+            private void CameraThreadMethod() {
+                while (_isAlive) {
+                    _windowDispatcher.Invoke(() => {
+                        if (img.IsDisposed || img.Rows * img.Cols == 0)
+                            return;
+                        OpenCvSharp.Extensions.WriteableBitmapConverter.ToWriteableBitmap(img, _back_thread_camera_img);
+                        CameraImage = _back_thread_camera_img;
+                        QrSource.UpdateImage(_back_thread_camera_img);
+                    });
+                    Cv2.CvtColor(img, hsvimg, ColorConversionCodes.BGR2HSV);
+                    Cv2.InRange(hsvimg, Lower, Upper, bwimg);
+                    DetectedPolygon = Cv2.FindContoursAsArray(bwimg, RetrievalModes.List, ContourApproximationModes.ApproxSimple).Where(c => Cv2.ContourArea(c) > 1000).Select(c => Cv2.ApproxPolyDP(c, _ApproxDPEpsilon, true)).FirstOrDefault();
+                    QrResult = QrReader.Decode(QrSource);
+                    _windowDispatcher.Invoke(() =>
+                    {
+                        if (bwimg.IsDisposed || bwimg.Rows * bwimg.Cols == 0)
+                            return;
+                        OpenCvSharp.Extensions.WriteableBitmapConverter.ToWriteableBitmap(bwimg, _back_thread_filter_img);
+                        FilterViewModel.Img = _back_thread_filter_img;
+                        if (QrResult != null) {
+                            IsQrCodeDetected = true;
+                            IsBlueButtonEnable = true;
+                            DetectedQrCode = QrResult.Text;
+                        }
+                        Window.DetectPoly.Points.Clear();
+                        if (DetectedPolygon != null) {
+                            foreach (var p in DetectedPolygon) {
+                                Window.DetectPoly.Points.Add(new System.Windows.Point(p.X, p.Y));
                             }
                         }
-                    }
-                });
-                _cameraThread.Start();
+                    });
+                    Thread.Sleep(WaitTime);
+                    Camera.Read(img);
+                }
             }
 
             public void StartDetectingQRCode() {
@@ -309,8 +317,23 @@ namespace PuzzleSupporter {
                 }
             }
 
-            internal void Stop() {
+            internal void ResumeBackThread() {
+                if (_isAlive)
+                    _isAlive = false;
+                else {
+                    _isAlive = true;
+                    _cameraThread = new Thread(CameraThreadMethod);
+                    _cameraThread.Start();
+                }
+            }
+
+            internal void End() {
                 _isAlive = false;
+                FilterWindow?.Close();
+                Camera?.Dispose();
+                img?.Dispose();
+                hsvimg?.Dispose();
+                bwimg?.Dispose();
             }
         }
 
@@ -327,7 +350,7 @@ namespace PuzzleSupporter {
         }
 
         private void ThisWindow_Closed(object sender, EventArgs e) {
-            _viewModel.Stop();
+            _viewModel.End();
             Thread.Sleep(1000);
         }
 
