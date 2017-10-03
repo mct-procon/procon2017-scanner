@@ -70,6 +70,7 @@ namespace PuzzleSupporter {
 
             private string _DetectedQrCode = "Nothing";
 
+			private DelegateCommand _SendDetectedPolygonCommand;
             private DelegateCommand _StartDetectingQRCodeCommand;
             private DelegateCommand _SendQRCodeAsHintCommand;
             private DelegateCommand _AppendQRCodeCommand;
@@ -149,6 +150,9 @@ namespace PuzzleSupporter {
                 set => SetProperty(ref _DetectedQrCode, value);
             }
 
+			public DelegateCommand SendDetectedPolygonCommand =>
+				_SendDetectedPolygonCommand ?? (_SendDetectedPolygonCommand = new DelegateCommand(SendPolygon));
+
             public DelegateCommand SendQrCodeAsHintCommand =>
                 _SendQRCodeAsHintCommand ?? (_SendQRCodeAsHintCommand = new DelegateCommand(SendQrCodeAsHint));
 
@@ -220,7 +224,7 @@ namespace PuzzleSupporter {
                         CameraImage = _back_thread_camera_img;
                         QrSource.UpdateImage(_back_thread_camera_img);
                     });
-                    Cv2.CvtColor(img, hsvimg, ColorConversionCodes.BGR2HSV);
+					Cv2.CvtColor(img, hsvimg, ColorConversionCodes.BGR2HSV);
                     Cv2.InRange(hsvimg, Lower, Upper, bwimg);
                     DetectedPolygon = Cv2.FindContoursAsArray(bwimg, RetrievalModes.List, ContourApproximationModes.ApproxSimple).Where(c => Cv2.ContourArea(c) > 1000).Select(c => Cv2.ApproxPolyDP(c, _ApproxDPEpsilon, true)).FirstOrDefault();
                     QrResult = QrReader.Decode(QrSource);
@@ -243,7 +247,8 @@ namespace PuzzleSupporter {
                         }
                     });
                     Thread.Sleep(WaitTime);
-                    Camera.Read(img);
+					if(_isAlive)
+						Camera.Read(img);
                 }
             }
 
@@ -329,11 +334,18 @@ namespace PuzzleSupporter {
 
             internal void End() {
                 _isAlive = false;
-                FilterWindow?.Close();
-                Camera?.Dispose();
-                img?.Dispose();
-                hsvimg?.Dispose();
-                bwimg?.Dispose();
+				Task.Run(() =>
+				{
+					while (_cameraThread != null && _cameraThread.IsAlive) ;
+					_windowDispatcher.Invoke(() =>
+					{
+						FilterWindow?.Close();
+						Camera?.Dispose();
+						img?.Dispose();
+						hsvimg?.Dispose();
+						bwimg?.Dispose();
+					});
+				});
             }
         }
 
