@@ -12,6 +12,18 @@
         <converters:MaximizeNormalizeConverter x:Key="MaximizeNormalizeConverter"/>
         <converters:DetectedStringConverter x:Key="DetectedStringConverter"/>
         <converters:DetectedVisibilityConverter x:Key="DetectVisibilityConverter"/>
+        <Storyboard x:Key="AppendedNotice">
+            <ThicknessAnimationUsingKeyFrames BeginTime="00:00:00" Storyboard.TargetName="NotificateTextBlock" Storyboard.TargetProperty="(TextBlock.Margin)">
+                <EasingThicknessKeyFrame KeyTime="00:00:01" Value="0,0,0,0"/>
+                <EasingThicknessKeyFrame KeyTime="00:00:02" Value="0,0,0,0"/>
+                <EasingThicknessKeyFrame KeyTime="00:00:03" Value="0,-50,0,0"/>
+            </ThicknessAnimationUsingKeyFrames>
+            <DoubleAnimationUsingKeyFrames BeginTime="00:00:00" Storyboard.TargetName="NotificateTextBlock" Storyboard.TargetProperty="(TextBlock.Opacity)">
+                <EasingDoubleKeyFrame KeyTime="00:00:01" Value="1"/>
+                <EasingDoubleKeyFrame KeyTime="00:00:02" Value="1"/>
+                <EasingDoubleKeyFrame KeyTime="00:00:03" Value="0"/>
+            </DoubleAnimationUsingKeyFrames>
+        </Storyboard>
     </Window.Resources>
     <WindowChrome.WindowChrome>
         <WindowChrome x:Name="WinChro" GlassFrameThickness="-1" CaptionHeight="40"/>
@@ -123,5 +135,6 @@
             <TextBlock Text="{Binding FPS}" Margin="200,344,5,0" VerticalAlignment="Top"/>
             <Button Content="Resume" VerticalAlignment="Top" Margin="5,367,5,0" Height="29" Command="{Binding ResumeCommand}"/>
         </Grid>
+        <TextBlock x:Name="NotificateTextBlock"  Grid.Row="1" Text="Appended" HorizontalAlignment="Left" VerticalAlignment="Bottom" Foreground="White" Background="DarkGreen" Padding="30,10" FontSize="20"/>
     </Grid>
 </Window>

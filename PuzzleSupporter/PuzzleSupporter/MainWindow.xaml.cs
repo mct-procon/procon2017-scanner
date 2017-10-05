@@ -23,6 +23,7 @@ using ZXing;
 
 using Prism.Commands;
 using Prism.Mvvm;
+using System.Windows.Media.Animation;
 
 namespace PuzzleSupporter {
     /// <summary>
@@ -30,6 +31,7 @@ namespace PuzzleSupporter {
     /// </summary>
     public partial class MainWindow : System.Windows.Window {
         internal ViewModel _viewModel;
+        internal Storyboard AppendedNotice;
 
         public MainWindow(int deviceId)
         {
@@ -47,6 +49,8 @@ namespace PuzzleSupporter {
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e) {
+            AppendedNotice = (Storyboard)this.Resources["AppendedNotice"];
+
             _viewModel.BeginCaptureing();
         }
 
@@ -302,8 +306,10 @@ namespace PuzzleSupporter {
                 if (!IsQrCodeDetecting)
                     return;
                 polygonParser.Append(DetectedQrCode).ContinueWith(res => {
-                    if (res.IsFaulted) 
+                    if (res.IsFaulted)
                         MessageBox.Show("QRコードデータの解析に失敗しました．", "ERROR!", MessageBoxButton.OK, MessageBoxImage.Error);
+                    else
+                        this.Window.AppendedNotice.Begin();
                 }, TaskScheduler.Current);
             }
 
