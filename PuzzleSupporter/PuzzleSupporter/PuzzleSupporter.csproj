@@ -110,6 +110,7 @@
     <Compile Include="Converters\DetectedVisibilityConverter.cs" />
     <Compile Include="Converters\DetectedStringConverter.cs" />
     <Compile Include="Converters\MaximizeNormalizeConverter.cs" />
+    <Compile Include="Converters\PointCollectionCountConverter.cs" />
     <Compile Include="Dialog\CameraSelectDialog.xaml.cs">
       <DependentUpon>CameraSelectDialog.xaml</DependentUpon>
     </Compile>

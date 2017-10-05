@@ -12,6 +12,7 @@
         <converters:MaximizeNormalizeConverter x:Key="MaximizeNormalizeConverter"/>
         <converters:DetectedStringConverter x:Key="DetectedStringConverter"/>
         <converters:DetectedVisibilityConverter x:Key="DetectVisibilityConverter"/>
+        <converters:PointCollectionConverter x:Key="PoColleConverter"/>
         <Storyboard x:Key="AppendedNotice">
             <ThicknessAnimationUsingKeyFrames BeginTime="00:00:00" Storyboard.TargetName="NotificateTextBlock" Storyboard.TargetProperty="(TextBlock.Margin)">
                 <EasingThicknessKeyFrame KeyTime="00:00:01" Value="0,0,0,0"/>
@@ -69,6 +70,7 @@
                 <Polygon x:Name="DetectPoly" Stroke="Red" StrokeThickness="1" HorizontalAlignment="Left" VerticalAlignment="Top" Fill="#33FF0000"/>
             </Grid>
         </Viewbox>
+        <TextBlock Text="{Binding ElementName=DetectPoly, Path=Points, Converter={StaticResource PoColleConverter}}" Grid.Row="1" FontSize="36" HorizontalAlignment="Left" VerticalAlignment="Top" Background="#66FFFFFF"/>
         <Grid x:Name="CaptionGrid" Grid.ColumnSpan="2">
             <Grid.Resources>
                 <ResourceDictionary Source="/Styles/CaptionDesign.xaml"/>
@@ -125,7 +127,7 @@
             <Slider x:Name="ApproxDPEpsilonSlider" Value="{Binding ApproxDPEpsilon}" SmallChange="0.01" Maximum="100" VerticalAlignment="Top" Margin="5,102,50,5"/>
             <TextBlock Text="{Binding ElementName=ApproxDPEpsilonSlider, Path=Value, Mode=OneWay}" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,102,5,5" />
 
-            <Button Content="[Sending Polygon]&#xA;Detected"  VerticalAlignment="Top" Margin="5,130,5,0" Height="50" RenderTransformOrigin="0.5,0.5" Background="Red" Foreground="White" Command="{Binding SendPolygonCommand}"/>
+            <Button Content="[Sending Polygon]&#xA;Detected"  VerticalAlignment="Top" Margin="5,130,5,0" Height="50" RenderTransformOrigin="0.5,0.5" Background="Red" Foreground="White" Command="{Binding SendDetectedPolygonCommand}"/>
             <Button Content="Send As Hint!" Visibility="{Binding IsQrCodeDetecting, Converter={StaticResource ResourceKey=DetectVisibilityConverter}}" VerticalAlignment="Top" Margin="214,240,5,0" Height="65" RenderTransformOrigin="0.5,0.5" Background="Purple" Foreground="White" Command="{Binding SendQrCodeAsHintCommand}"/>
             <Button Content="{Binding IsQrCodeDetected, Converter={StaticResource ResourceKey=DetectedStringConverter}}" IsEnabled="{Binding IsQrCodeDetected}" VerticalAlignment="Top" Margin="5,185,147,0" Height="50" RenderTransformOrigin="0.5,0.5" Background="Blue" Foreground="White" Command="{Binding StartDetectingQRCodeCommand}"/>
             <Button Content="Append QrCode Data" Visibility="{Binding IsQrCodeDetecting, Converter={StaticResource ResourceKey=DetectVisibilityConverter}}" VerticalAlignment="Top" Margin="158,185,5,0" Height="50" RenderTransformOrigin="0.5,0.5" Background="Green" Foreground="White" Command="{Binding AppendQRCodeCommand}"/>
