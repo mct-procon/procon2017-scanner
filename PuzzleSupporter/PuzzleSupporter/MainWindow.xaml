@@ -137,6 +137,6 @@
             <TextBlock Text="{Binding FPS}" Margin="200,344,5,0" VerticalAlignment="Top"/>
             <Button Content="Resume" VerticalAlignment="Top" Margin="5,367,5,0" Height="29" Command="{Binding ResumeCommand}"/>
         </Grid>
-        <TextBlock x:Name="NotificateTextBlock"  Grid.Row="1" Text="Appended" HorizontalAlignment="Left" VerticalAlignment="Bottom" Foreground="White" Background="DarkGreen" Padding="30,10" FontSize="20"/>
+        <TextBlock x:Name="NotificateTextBlock"  Grid.Row="1" Text="Appended" HorizontalAlignment="Left" VerticalAlignment="Bottom" Foreground="White" Background="DarkGreen" Padding="30,10" FontSize="20" Margin="0,0,0,-50" Opacity="0"/>
     </Grid>
 </Window>
