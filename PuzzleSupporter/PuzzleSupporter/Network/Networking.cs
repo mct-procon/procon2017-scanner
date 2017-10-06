@@ -8,15 +8,51 @@ using System.ServiceModel;
 
 namespace PuzzleSupporter.Network {
     public static class WCF{
-        public static IProconPuzzleService StartWCFSender() {
-            BasicHttpBinding binding = new BasicHttpBinding();
-            ChannelFactory<IProconPuzzleService> factory = new ChannelFactory<IProconPuzzleService>(binding, new EndpointAddress(Parameter.ProconPuzzUri));
-            return factory.CreateChannel();
+        public static ProconPuzzleService StartWCFSender() {
+            return new ProconPuzzleService();
         }
 
         public class Dummy : IProconPuzzleService {
             public void Polygon(SendablePolygon poly) { }
             public void QRCode(QRCodeData data) { }
+        }
+
+        public class ProconPuzzleService : IProconPuzzleService{
+            IProconPuzzleService[] services = new IProconPuzzleService[3];
+            internal Exception[] exceptions = new Exception[3];
+            public ProconPuzzleService() {
+                for(int i = 0; i < 3; ++i)
+                    try {
+                        services[i] = new ChannelFactory<IProconPuzzleService>(new BasicHttpBinding(), new EndpointAddress(Parameter.ProconPuzzUri[i])).CreateChannel();
+                    } catch(Exception ex) {
+                        exceptions[i] = ex;
+                        services[i] = new Dummy();
+                    }
+            }
+
+            public void Polygon(SendablePolygon poly) {
+                int err = 0;
+                for (int i = 0; i < 3; ++i)
+                    try {
+                        services[i].Polygon(poly);
+                    } catch {
+                        err++;
+                    }
+                if (err == 3)
+                    throw new Exception();
+            }
+
+            public void QRCode(QRCodeData codeData) {
+                int err = 0;
+                for (int i = 0; i < 3; ++i)
+                    try {
+                        services[i].QRCode(codeData);
+                    } catch {
+                        err++;
+                    }
+                if (err == 3)
+                    throw new Exception();
+            }
         }
     }
 }

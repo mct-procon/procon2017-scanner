@@ -33,13 +33,9 @@ namespace PuzzleSupporter {
         internal ViewModel _viewModel;
         internal Storyboard AppendedNotice;
 
-        public MainWindow(int deviceId)
-        {
-            InitializeComponent();
-            _viewModel = new ViewModel(Dispatcher, this);
+        public MainWindow(int deviceId) : this() {
             _viewModel.DeviceId = deviceId;
             this.Title = $"{deviceId} - PuzzleSupporter";
-            this.DataContext = _viewModel;
         }
 
         public MainWindow() {
@@ -50,7 +46,6 @@ namespace PuzzleSupporter {
 
         private void Window_Loaded(object sender, RoutedEventArgs e) {
             AppendedNotice = (Storyboard)this.Resources["AppendedNotice"];
-
             _viewModel.BeginCaptureing();
         }
 
@@ -69,7 +64,7 @@ namespace PuzzleSupporter {
             private FilterPreviewWindow FilterWindow;
             private FilterPreviewWindow.ViewModel FilterViewModel;
             private double _ApproxDPEpsilon;
-            private Procon2017MCTProtocol.IProconPuzzleService PuzzService;
+            private Network.WCF.ProconPuzzleService PuzzService;
             private VideoCapture Camera;
 
             private string _DetectedQrCode = "Nothing";
@@ -83,12 +78,8 @@ namespace PuzzleSupporter {
             internal ViewModel(Dispatcher disp, MainWindow win) {
                 _windowDispatcher = disp;
                 Window = win;
-                try {
-                    PuzzService = Network.WCF.StartWCFSender();
-                } catch {
-                    MessageBox.Show("ソルバとの接続に失敗しました．", "Connection Error", MessageBoxButton.OK, MessageBoxImage.Information);
-                    PuzzService = new Network.WCF.Dummy();
-                }
+                //PuzzService = Network.WCF.StartWCFSender();
+                //MessageBox.Show($"You connected to {PuzzService.exceptions.Count(e => e == null)} Solvers.", "Connected!", MessageBoxButton.OK, MessageBoxImage.Information);
             }
 
             public WriteableBitmap CameraImage {

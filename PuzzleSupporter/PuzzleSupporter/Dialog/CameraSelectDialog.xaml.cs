@@ -36,7 +36,8 @@ namespace PuzzleSupporter.Dialog {
         }
 
         private void Button_Click(object sender, RoutedEventArgs e) {
-            (new MainWindow((int)CameraNum)).Show();
+            var window = new MainWindow((int)CameraNum);
+            window.Show();
             this.Close();
         }
     }
