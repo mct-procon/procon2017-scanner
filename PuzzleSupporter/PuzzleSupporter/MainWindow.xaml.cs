@@ -314,7 +314,7 @@ namespace PuzzleSupporter {
                     if (res.IsFaulted)
                         MessageBox.Show("QRコードデータの解析に失敗しました．", "ERROR!", MessageBoxButton.OK, MessageBoxImage.Error);
                     else
-                        this.Window.AppendedNotice.Begin();
+                        Window.Dispatcher.Invoke(() => this.Window.AppendedNotice.Begin());
                 }, TaskScheduler.Current);
             }
 
