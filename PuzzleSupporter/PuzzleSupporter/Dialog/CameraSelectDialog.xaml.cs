@@ -20,6 +20,12 @@ namespace PuzzleSupporter.Dialog {
         uint CameraNum = 0;
         bool IgnoreChanges = false;
 
+        public CameraSelectDialog(uint cameraindex) : this() {
+            IgnoreChanges = true;
+            CameraNumBox.Text = cameraindex.ToString();
+            IgnoreChanges = false;
+        }
+
         public CameraSelectDialog() {
             InitializeComponent();
         }
@@ -36,7 +42,7 @@ namespace PuzzleSupporter.Dialog {
         }
 
         private void Button_Click(object sender, RoutedEventArgs e) {
-            var window = new MainWindow((int)CameraNum);
+            var window = new MainWindow((int)CameraNum, new bool[] { Check_Beam.IsChecked == true, Check_Nantyatte.IsChecked == true, Check_Gatiyatte.IsChecked == true });
             window.Show();
             this.Close();
         }

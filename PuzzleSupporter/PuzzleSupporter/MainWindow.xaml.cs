@@ -33,19 +33,20 @@ namespace PuzzleSupporter {
         internal ViewModel _viewModel;
         internal Storyboard AppendedNotice;
 
-        public MainWindow(int deviceId) : this() {
+        public MainWindow(int deviceId, bool[] solverBeam) : this(solverBeam) {
             _viewModel.DeviceId = deviceId;
             this.Title = $"{deviceId} - PuzzleSupporter";
         }
 
-        public MainWindow() {
+        public MainWindow(bool[] solverBeam) {
             InitializeComponent();
-            _viewModel = new ViewModel(Dispatcher, this);
+            _viewModel = new ViewModel(Dispatcher, this, solverBeam);
             this.DataContext = _viewModel;
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e) {
             AppendedNotice = (Storyboard)this.Resources["AppendedNotice"];
+
             _viewModel.BeginCaptureing();
         }
 
@@ -75,11 +76,11 @@ namespace PuzzleSupporter {
             private DelegateCommand _AppendQRCodeCommand;
             private DelegateCommand _ResumeCommand;
 
-            internal ViewModel(Dispatcher disp, MainWindow win) {
+            internal ViewModel(Dispatcher disp, MainWindow win, bool[] AvaibableSolvers){
                 _windowDispatcher = disp;
                 Window = win;
-                //PuzzService = Network.WCF.StartWCFSender();
-                //MessageBox.Show($"You connected to {PuzzService.exceptions.Count(e => e == null)} Solvers.", "Connected!", MessageBoxButton.OK, MessageBoxImage.Information);
+                PuzzService = Network.WCF.StartWCFSender(AvaibableSolvers);
+                MessageBox.Show($"You connected to {PuzzService.exceptions.Count(e => e == null)} Solvers.", "Connected!", MessageBoxButton.OK, MessageBoxImage.Information);
             }
 
             public WriteableBitmap CameraImage {

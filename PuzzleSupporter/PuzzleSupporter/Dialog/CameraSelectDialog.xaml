@@ -5,10 +5,13 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:PuzzleSupporter.Dialog"
         mc:Ignorable="d"
-        Title="CameraSelecting - PuzzleSupporter" Height="125.423" Width="444.915">
+        Title="CameraSelecting - PuzzleSupporter" Height="160.499" Width="444.915">
     <Grid>
         <TextBlock Text="Type the camera number." HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,10,0,0"/>
         <TextBox x:Name="CameraNumBox" Text="0" Margin="10,31,10,0" VerticalAlignment="Top" TextChanged="CameraNumBox_TextChanged"/>
+        <CheckBox x:Name="Check_Beam" Content="BaemSearch" IsChecked="True" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="10,54,0,0"/>
+        <CheckBox x:Name="Check_Nantyatte" Content="Nantyatte" IsChecked="True" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="143,54,0,0"/>
+        <CheckBox x:Name="Check_Gatiyatte" Content="Gatiyatte" IsChecked="True" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="251,54,0,0"/>
         <Button Content="OK" VerticalAlignment="Bottom" HorizontalContentAlignment="Center" HorizontalAlignment="Right" Margin="0,0,10,10" Width="85" Click="Button_Click"/>
     </Grid>
 </Window>

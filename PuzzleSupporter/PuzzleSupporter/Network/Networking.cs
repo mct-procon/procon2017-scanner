@@ -8,8 +8,8 @@ using System.ServiceModel;
 
 namespace PuzzleSupporter.Network {
     public static class WCF{
-        public static ProconPuzzleService StartWCFSender() {
-            return new ProconPuzzleService();
+        public static ProconPuzzleService StartWCFSender(bool[] AvaibableSolvers) {
+            return new ProconPuzzleService(AvaibableSolvers);
         }
 
         public class Dummy : IProconPuzzleService {
@@ -20,14 +20,17 @@ namespace PuzzleSupporter.Network {
         public class ProconPuzzleService : IProconPuzzleService{
             IProconPuzzleService[] services = new IProconPuzzleService[3];
             internal Exception[] exceptions = new Exception[3];
-            public ProconPuzzleService() {
+            public ProconPuzzleService(bool[] AvaibableSolvers) {
                 for(int i = 0; i < 3; ++i)
-                    try {
-                        services[i] = new ChannelFactory<IProconPuzzleService>(new BasicHttpBinding(), new EndpointAddress(Parameter.ProconPuzzUri[i])).CreateChannel();
-                    } catch(Exception ex) {
-                        exceptions[i] = ex;
+                    if(i < AvaibableSolvers.Length && AvaibableSolvers[i])
+                        try {
+                            services[i] = new ChannelFactory<IProconPuzzleService>(new BasicHttpBinding(), new EndpointAddress(Parameter.ProconPuzzUri[i])).CreateChannel();
+                        } catch(Exception ex) {
+                            exceptions[i] = ex;
+                            services[i] = new Dummy();
+                        }
+                    else
                         services[i] = new Dummy();
-                    }
             }
 
             public void Polygon(SendablePolygon poly) {
