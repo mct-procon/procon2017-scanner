@@ -316,6 +316,8 @@ namespace PuzzleSupporter {
             }
 
             public void ClearQRCode() {
+                IsQrCodeDetecting = false;
+                IsQrCodeDetected = false;
                 polygonParser = null;
             }
 

@@ -19,8 +19,8 @@ namespace PuzzleSupporter {
         private void Application_Startup(object sender, StartupEventArgs e)
         {
             string[] commandargs = System.Environment.GetCommandLineArgs();
-            int o;
-            if(commandargs.Length > 2 && int.TryParse(commandargs[1], out o)) {
+            uint o;
+            if(commandargs.Length > 2 && uint.TryParse(commandargs[1], out o)) {
                 (new Dialog.CameraSelectDialog(o)).Show();
             } else {
                 (new Dialog.CameraSelectDialog()).Show();
