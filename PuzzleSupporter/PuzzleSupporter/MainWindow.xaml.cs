@@ -75,6 +75,7 @@ namespace PuzzleSupporter {
             private DelegateCommand _SendQRCodeAsHintCommand;
             private DelegateCommand _AppendQRCodeCommand;
             private DelegateCommand _ResumeCommand;
+            private DelegateCommand _ClearQRCodeCommand;
 
             internal ViewModel(Dispatcher disp, MainWindow win, bool[] AvaibableSolvers){
                 _windowDispatcher = disp;
@@ -159,6 +160,10 @@ namespace PuzzleSupporter {
                 _AppendQRCodeCommand ?? (_AppendQRCodeCommand = new DelegateCommand(AppendQRCode));
             public DelegateCommand ResumeCommand =>
                 _ResumeCommand ?? (_ResumeCommand = new DelegateCommand(ResumeBackThread));
+
+            public DelegateCommand ClearQRCodeCommand =>
+                _ClearQRCodeCommand ?? (_ClearQRCodeCommand = new DelegateCommand(ClearQRCode));
+
 
             public double FPS {
                 get => _fps;
@@ -308,6 +313,10 @@ namespace PuzzleSupporter {
                     else
                         Window.Dispatcher.Invoke(() => this.Window.AppendedNotice.Begin());
                 }, TaskScheduler.Current);
+            }
+
+            public void ClearQRCode() {
+                polygonParser = null;
             }
 
             public void SendPolygon() {
